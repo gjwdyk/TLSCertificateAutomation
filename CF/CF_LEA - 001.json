@@ -537,72 +537,24 @@
       "default": "Common CloudFormation Parameters"
      },
      "Parameters": [
-      "K8sNodeImageID",
-      "K8sNodeImageType",
-      "K8sNodeInstanceType",
-      "NumberOfK8sWorkerNode",
+      "UbuntuImageID",
+      "UbuntuImageType",
+      "UbuntuInstanceType",
       "EC2SSHKeyPair",
-      "ParentDomainName"
-     ]
-    },
-    {
-     "Label": {
-      "default": "Common Operating System Parameters"
-     },
-     "Parameters": [
-      "K8sSSHPrivateKey",
-      "K8sSSHPublicKey",
       "TimeZone"
      ]
     },
     {
      "Label": {
-      "default": "Kubernetes Parameters"
+      "default": "CertBot Parameters"
      },
      "Parameters": [
-      "OSPreparationScript",
-      "DockerPreparationScript",
-      "CommonK8sPreparationScript",
-      "K8sMasterPreparationScript",
-      "ClusterNetworkConfiguration",
-      "K8sWorkerPreparationScript",
-      "K8sServicePreparationScript"
+      "DomainNames",
+      "SSHPrivateKey",
+      "SSHPublicKey"
      ]
     },
-    {
-     "Label": {
-      "default": "NGINX+ Parameters"
-     },
-     "Parameters": [
-      "CompileNGINXPlusScript",
-      "SkipNGINXPlusCompilation",
-      "NGINXRepositoryCertificate",
-      "NGINXRepositoryPrivateKey",
-      "DockerHubUserID",
-      "DockerHubPassword",
-      "DockerHubRepositoryName",
-      "NGINXPlusVersion",
-      "NGINXPlusIngressScript"
-     ]
-    },
-    {
-     "Label": {
-      "default": "Application Service(s) Parameters"
-     },
-     "Parameters": [
-      "ApplicationServiceScript"
-     ]
-    },
-    {
-     "Label": {
-      "default": "Big-IP CIS Parameters"
-     },
-     "Parameters": [
-      "BigIPCISScript",
-      "BigIPCISNodeTemplate",
-      "BigIPCISClusterDeploymentTemplate"
-     ]
-    },
+
     {
      "Label": {
       "default": "Big-IP Parameters"
@@ -627,8 +579,6 @@
       "UpgradeBigIP",
       "UpgradeImageURLPath",
       "UpgradeImageFileName",
-      "BigIPTrafficTLSKey",
-      "BigIPTrafficTLSCertificate",
       "AllowPhoneHome",
       "Lidsa"
      ]
