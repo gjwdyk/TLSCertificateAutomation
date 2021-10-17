@@ -384,7 +384,7 @@
   "DomainNames": {
    "Type": "String",
    "Default": "aadc.link",
-   "Description": "Existing registered Domain Name in AWS Route53 which you have access to add, modify and delete."
+   "Description": "Existing registered Domain Names in AWS Route53 which you have access to add, modify and delete. Format : domain.com domain.net domain.gov ."
   },
   "CertBotPreparationScript": {
    "Type": "String",
@@ -551,10 +551,10 @@
      "Parameters": [
       "DomainNames",
       "SSHPrivateKey",
-      "SSHPublicKey"
+      "SSHPublicKey",
+      "CertBotPreparationScript"
      ]
     },
-
     {
      "Label": {
       "default": "Big-IP Parameters"
@@ -588,96 +588,37 @@
     "TagPreFix": {
      "default": "PreFix for Name Tags"
     },
-    "K8sNodeImageID": {
-     "default": "K8s Nodes' Image ID"
+    "TagOwnerEmail": {
+     "default": "Owner Tag's Value"
     },
-    "K8sNodeImageType": {
-     "default": "K8s Nodes' Image Type"
+
+    "UbuntuImageID": {
+     "default": "Ubuntu's Image ID"
     },
-    "K8sNodeInstanceType": {
-     "default": "K8s Nodes' Instance Type"
+    "UbuntuImageType": {
+     "default": "Ubuntu's Image Type"
     },
-    "NumberOfK8sWorkerNode": {
-     "default": "Number of K8s Worker Node(s)"
+    "UbuntuInstanceType": {
+     "default": "Ubuntu's Instance Type"
     },
     "EC2SSHKeyPair": {
      "default": "EC2 SSH Key-Pair"
-    },
-    "ParentDomainName": {
-     "default": "Existing Registered Domain Name in AWS Route53"
-    },
-
-    "K8sSSHPrivateKey": {
-     "default": "K8s Nodes SSH Private Key"
-    },
-    "K8sSSHPublicKey": {
-     "default": "K8s Nodes SSH Public Key"
     },
     "TimeZone": {
      "default": "Time Zone"
     },
 
-    "OSPreparationScript": {
-     "default": "URL of OS Preparation Script"
+    "SSHPrivateKey": {
+     "default": "SSH Private Key To Be Used Between Nodes"
     },
-    "DockerPreparationScript": {
-     "default": "URL of Docker Preparation Script"
+    "SSHPublicKey": {
+     "default": "SSH Public Key To Be Used Between Nodes"
     },
-    "CommonK8sPreparationScript": {
-     "default": "URL of Common K8s Preparation Script"
+    "DomainNames": {
+     "default": "Existing Registered Domain Names in AWS Route53"
     },
-    "K8sMasterPreparationScript": {
-     "default": "URL of K8s Master Preparation Script"
-    },
-    "ClusterNetworkConfiguration": {
-     "default": "URL of Cluster Networking (flannel) YAML File"
-    },
-    "K8sWorkerPreparationScript": {
-     "default": "URL of K8s Worker Preparation Script"
-    },
-    "K8sServicePreparationScript": {
-     "default": "URL of K8s Fundamental Services Script"
-    },
-
-    "CompileNGINXPlusScript": {
-     "default": "URL of NGINX+ Compilation Script"
-    },
-    "SkipNGINXPlusCompilation": {
-     "default": "Skip NGINX+ Compilation ?"
-    },
-    "NGINXRepositoryCertificate": {
-     "default": "NGINX+ Repository Certificate"
-    },
-    "NGINXRepositoryPrivateKey": {
-     "default": "NGINX+ Repository Private Key"
-    },
-    "DockerHubUserID": {
-     "default": "Repository (Docker Hub) User ID"
-    },
-    "DockerHubPassword": {
-     "default": "Repository (Docker Hub) Password"
-    },
-    "DockerHubRepositoryName": {
-     "default": "NGINX+'s Repository (Docker Hub) Name"
-    },
-    "NGINXPlusVersion": {
-     "default": "NGINX+ Version"
-    },
-    "NGINXPlusIngressScript": {
-     "default": "URL of NGINX+ KIC Script"
-    },
-    "ApplicationServiceScript": {
-     "default": "URL of Application Service(s) Script"
-    },
-
-    "BigIPCISScript": {
-     "default": "URL of Big-IP CIS Script"
-    },
-    "BigIPCISNodeTemplate": {
-     "default": "URL of Big-IP CIS Node Template"
-    },
-    "BigIPCISClusterDeploymentTemplate": {
-     "default": "URL of Big-IP CIS Cluster Deployment Template"
+    "CertBotPreparationScript": {
+     "default": "URL of CertBot Preparation Script"
     },
 
     "BigIPImageID": {
@@ -737,12 +678,6 @@
     "UpgradeImageFileName": {
      "default": "Upgrade Image's File Name, of the .iso file used to upgrade the Big-IP image"
     },
-    "BigIPTrafficTLSKey": {
-     "default": "URL of the Private Key (of the SSL/TLS Certificate)"
-    },
-    "BigIPTrafficTLSCertificate": {
-     "default": "URL of the SSL/TLS Certificate"
-    },
     "AllowPhoneHome": {
      "default": "Send Anonymous Device Statistics to F5"
     },
@@ -760,24 +695,24 @@
     "EnableDnsSupport": "true",
     "EnableDnsHostnames": "true",
     "CidrBlock": { "Fn::Join": [ ".", [ { "Fn::FindInMap": [ "IPAddress", "VPC", "PreFix" ] }, "0.0/16" ] ] },
-    "Tags": [ { "Key": "Name", "Value": { "Fn::Join": [ "_", [ { "Ref": "TagPreFix" }, { "Ref": "AWS::StackName" }, "VPC" ] ] } } ]
+    "Tags": [ { "Key": "Name", "Value": { "Fn::Join": [ "_", [ { "Ref": "TagPreFix" }, { "Ref": "AWS::StackName" }, "VPC" ] ] } }, { "Key": "Owner", "Value": { "Ref": "TagOwnerEmail" } } ]
    }
   },
-  "K8sNodeSubnet": {
+  "NodesSubnet": {
    "Type": "AWS::EC2::Subnet",
    "DependsOn": [ "VPC" ],
    "Properties": {
     "VpcId": { "Ref": "VPC" },
     "AvailabilityZone": { "Fn::Select": [ "0", { "Fn::GetAZs": { "Ref": "AWS::Region" } } ] },
     "MapPublicIpOnLaunch": "true",
-    "CidrBlock": { "Fn::Join": [ ".", [ { "Fn::FindInMap": [ "IPAddress", "VPC", "PreFix" ] }, { "Fn::FindInMap": [ "IPAddress", "K8sNode", "InFix" ] }, "0/24" ] ] },
-    "Tags": [ { "Key": "Name", "Value": { "Fn::Join": [ "_", [ { "Ref": "TagPreFix" }, { "Ref": "AWS::StackName" }, "K8sNodeSubnet" ] ] } } ]
+    "CidrBlock": { "Fn::Join": [ ".", [ { "Fn::FindInMap": [ "IPAddress", "VPC", "PreFix" ] }, { "Fn::FindInMap": [ "IPAddress", "Nodes", "InFix" ] }, "0/24" ] ] },
+    "Tags": [ { "Key": "Name", "Value": { "Fn::Join": [ "_", [ { "Ref": "TagPreFix" }, { "Ref": "AWS::StackName" }, "NodesSubnet" ] ] } }, { "Key": "Owner", "Value": { "Ref": "TagOwnerEmail" } } ]
    }
   },
   "InternetGateway": {
    "Type": "AWS::EC2::InternetGateway",
    "Properties": {
-    "Tags": [ { "Key": "Name", "Value": { "Fn::Join": [ "_", [ { "Ref": "TagPreFix" }, { "Ref": "AWS::StackName" }, "InternetGateway" ] ] } } ]
+    "Tags": [ { "Key": "Name", "Value": { "Fn::Join": [ "_", [ { "Ref": "TagPreFix" }, { "Ref": "AWS::StackName" }, "InternetGateway" ] ] } }, { "Key": "Owner", "Value": { "Ref": "TagOwnerEmail" } } ]
    }
   },
   "VPCGatewayAttachment": {
@@ -793,7 +728,7 @@
    "DependsOn": [ "VPC" ],
    "Properties": {
     "VpcId": { "Ref": "VPC" },
-    "Tags": [ { "Key": "Name", "Value": { "Fn::Join": [ "_", [ { "Ref": "TagPreFix" }, { "Ref": "AWS::StackName" }, "K8sNodeRouteTable" ] ] } } ]
+    "Tags": [ { "Key": "Name", "Value": { "Fn::Join": [ "_", [ { "Ref": "TagPreFix" }, { "Ref": "AWS::StackName" }, "K8sNodeRouteTable" ] ] } }, { "Key": "Owner", "Value": { "Ref": "TagOwnerEmail" } } ]
    }
   },
   "K8sNodeRoute": {
@@ -805,11 +740,11 @@
     "GatewayId": { "Ref": "InternetGateway" }
    }
   },
-  "K8sNodeSubnetRouteTableAssociation": {
+  "NodesSubnetRouteTableAssociation": {
    "Type": "AWS::EC2::SubnetRouteTableAssociation",
-   "DependsOn": [ "K8sNodeSubnet", "K8sNodeRouteTable" ],
+   "DependsOn": [ "NodesSubnet", "K8sNodeRouteTable" ],
    "Properties": {
-    "SubnetId": { "Ref": "K8sNodeSubnet" },
+    "SubnetId": { "Ref": "NodesSubnet" },
     "RouteTableId": { "Ref": "K8sNodeRouteTable" }
    }
   },
@@ -818,7 +753,7 @@
    "DependsOn": [ "VPC" ],
    "Properties": {
     "VpcId": { "Ref": "VPC" },
-    "Tags": [ { "Key": "Name", "Value": { "Fn::Join": [ "_", [ { "Ref": "TagPreFix" }, { "Ref": "AWS::StackName" }, "K8sNodeNetworkAcL" ] ] } } ]
+    "Tags": [ { "Key": "Name", "Value": { "Fn::Join": [ "_", [ { "Ref": "TagPreFix" }, { "Ref": "AWS::StackName" }, "K8sNodeNetworkAcL" ] ] } }, { "Key": "Owner", "Value": { "Ref": "TagOwnerEmail" } } ]
    }
   },
   "InboundTCPK8sNodeNetworkAcLEntry": {
@@ -899,11 +834,11 @@
     "CidrBlock": "0.0.0.0/0"
    }
   },
-  "K8sNodeSubnetNetworkAcLAssociation": {
+  "NodesSubnetNetworkAcLAssociation": {
    "Type": "AWS::EC2::SubnetNetworkAclAssociation",
-   "DependsOn": [ "K8sNodeSubnet", "K8sNodeNetworkAcL" ],
+   "DependsOn": [ "NodesSubnet", "K8sNodeNetworkAcL" ],
    "Properties": {
-    "SubnetId": { "Ref": "K8sNodeSubnet" },
+    "SubnetId": { "Ref": "NodesSubnet" },
     "NetworkAclId": { "Ref": "K8sNodeNetworkAcL" }
    }
   },
@@ -916,7 +851,7 @@
     "VpcId": { "Ref": "VPC" },
     "SecurityGroupEgress": [ { "IpProtocol": "-1", "CidrIp": "0.0.0.0/0" } ],
     "SecurityGroupIngress": [
-     { "IpProtocol": "-1", "CidrIp": { "Fn::Join": [ ".", [ { "Fn::FindInMap": [ "IPAddress", "VPC", "PreFix" ] }, { "Fn::FindInMap": [ "IPAddress", "K8sNode", "InFix" ] }, "0/24" ] ] } },
+     { "IpProtocol": "-1", "CidrIp": { "Fn::Join": [ ".", [ { "Fn::FindInMap": [ "IPAddress", "VPC", "PreFix" ] }, { "Fn::FindInMap": [ "IPAddress", "Nodes", "InFix" ] }, "0/24" ] ] } },
      { "IpProtocol" : "tcp", "FromPort" : 22, "ToPort" : 22, "CidrIp" : "0.0.0.0/0" },
      { "IpProtocol" : "udp", "FromPort" : 53, "ToPort" : 53, "CidrIp" : "0.0.0.0/0" },
      { "IpProtocol" : "tcp", "FromPort" : 53, "ToPort" : 53, "CidrIp" : "0.0.0.0/0" },
@@ -938,13 +873,13 @@
   },
   "BigIPNetworkInterface": {
    "Type": "AWS::EC2::NetworkInterface",
-   "DependsOn": [ "BigIPSecurityGroup", "K8sNodeSubnet" ],
+   "DependsOn": [ "BigIPSecurityGroup", "NodesSubnet" ],
    "Properties": {
     "Description": "Network Interface for Big-IP",
     "GroupSet": [ {"Ref": "BigIPSecurityGroup"} ],
     "SourceDestCheck": "false",
-    "SubnetId": { "Ref": "K8sNodeSubnet" },
-    "PrivateIpAddress": { "Fn::Join": [ ".", [ { "Fn::FindInMap": [ "IPAddress", "VPC", "PreFix" ] }, { "Fn::FindInMap": [ "IPAddress", "K8sNode", "InFix" ] }, { "Fn::FindInMap": [ "IPAddress", "BigIP", "SufFix" ] } ] ] },
+    "SubnetId": { "Ref": "NodesSubnet" },
+    "PrivateIpAddress": { "Fn::Join": [ ".", [ { "Fn::FindInMap": [ "IPAddress", "VPC", "PreFix" ] }, { "Fn::FindInMap": [ "IPAddress", "Nodes", "InFix" ] }, { "Fn::FindInMap": [ "IPAddress", "BigIP", "SufFix" ] } ] ] },
     "Tags": [ { "Key": "Name", "Value": { "Fn::Join": [ "_", [ { "Ref": "TagPreFix" }, { "Ref": "AWS::StackName" }, "BigIPNetworkInterface" ] ] } } ]
    }
   },
@@ -954,7 +889,7 @@
    "Properties": {
     "AllocationId": { "Fn::GetAtt": [ "BigIPEIP", "AllocationId" ] },
     "NetworkInterfaceId": { "Ref": "BigIPNetworkInterface" },
-    "PrivateIpAddress": { "Fn::Join": [ ".", [ { "Fn::FindInMap": [ "IPAddress", "VPC", "PreFix" ] }, { "Fn::FindInMap": [ "IPAddress", "K8sNode", "InFix" ] }, { "Fn::FindInMap": [ "IPAddress", "BigIP", "SufFix" ] } ] ] }
+    "PrivateIpAddress": { "Fn::Join": [ ".", [ { "Fn::FindInMap": [ "IPAddress", "VPC", "PreFix" ] }, { "Fn::FindInMap": [ "IPAddress", "Nodes", "InFix" ] }, { "Fn::FindInMap": [ "IPAddress", "BigIP", "SufFix" ] } ] ] }
    }
   },
 
@@ -966,7 +901,7 @@
     "VpcId": { "Ref": "VPC" },
     "SecurityGroupEgress": [ { "IpProtocol": "-1", "CidrIp": "0.0.0.0/0" } ],
     "SecurityGroupIngress": [
-     { "IpProtocol": "-1", "CidrIp": { "Fn::Join": [ ".", [ { "Fn::FindInMap": [ "IPAddress", "VPC", "PreFix" ] }, { "Fn::FindInMap": [ "IPAddress", "K8sNode", "InFix" ] }, "0/24" ] ] } },
+     { "IpProtocol": "-1", "CidrIp": { "Fn::Join": [ ".", [ { "Fn::FindInMap": [ "IPAddress", "VPC", "PreFix" ] }, { "Fn::FindInMap": [ "IPAddress", "Nodes", "InFix" ] }, "0/24" ] ] } },
      { "IpProtocol" : "tcp", "FromPort" : 22, "ToPort" : 22, "CidrIp" : "0.0.0.0/0" }
     ],
     "Tags": [ { "Key": "Name", "Value": { "Fn::Join": [ "_", [ { "Ref": "TagPreFix" }, { "Ref": "AWS::StackName" }, "K8sNodeSecurityGroup" ] ] } } ]
@@ -974,129 +909,129 @@
   },
   "K8sMaster1NetworkInterface": {
    "Type": "AWS::EC2::NetworkInterface",
-   "DependsOn": [ "K8sNodeSecurityGroup", "K8sNodeSubnet" ],
+   "DependsOn": [ "K8sNodeSecurityGroup", "NodesSubnet" ],
    "Properties": {
     "Description": "Network Interface for K8s Master 1",
     "GroupSet": [ {"Ref": "K8sNodeSecurityGroup"} ],
     "SourceDestCheck": "false",
-    "SubnetId": { "Ref": "K8sNodeSubnet" },
-    "PrivateIpAddress": { "Fn::Join": [ ".", [ { "Fn::FindInMap": [ "IPAddress", "VPC", "PreFix" ] }, { "Fn::FindInMap": [ "IPAddress", "K8sNode", "InFix" ] }, { "Fn::FindInMap": [ "IPAddress", "K8sMaster1", "SufFix" ] } ] ] },
+    "SubnetId": { "Ref": "NodesSubnet" },
+    "PrivateIpAddress": { "Fn::Join": [ ".", [ { "Fn::FindInMap": [ "IPAddress", "VPC", "PreFix" ] }, { "Fn::FindInMap": [ "IPAddress", "Nodes", "InFix" ] }, { "Fn::FindInMap": [ "IPAddress", "K8sMaster1", "SufFix" ] } ] ] },
     "Tags": [ { "Key": "Name", "Value": { "Fn::Join": [ "_", [ { "Ref": "TagPreFix" }, { "Ref": "AWS::StackName" }, "K8sMaster1NetworkInterface" ] ] } } ]
    }
   },
   "K8sWorker1NetworkInterface": {
    "Type": "AWS::EC2::NetworkInterface",
-   "DependsOn": [ "K8sNodeSecurityGroup", "K8sNodeSubnet" ],
+   "DependsOn": [ "K8sNodeSecurityGroup", "NodesSubnet" ],
    "Properties": {
     "Description": "Network Interface for K8s Worker 1",
     "GroupSet": [ {"Ref": "K8sNodeSecurityGroup"} ],
     "SourceDestCheck": "false",
-    "SubnetId": { "Ref": "K8sNodeSubnet" },
-    "PrivateIpAddress": { "Fn::Join": [ ".", [ { "Fn::FindInMap": [ "IPAddress", "VPC", "PreFix" ] }, { "Fn::FindInMap": [ "IPAddress", "K8sNode", "InFix" ] }, { "Fn::FindInMap": [ "IPAddress", "K8sWorker1", "SufFix" ] } ] ] },
+    "SubnetId": { "Ref": "NodesSubnet" },
+    "PrivateIpAddress": { "Fn::Join": [ ".", [ { "Fn::FindInMap": [ "IPAddress", "VPC", "PreFix" ] }, { "Fn::FindInMap": [ "IPAddress", "Nodes", "InFix" ] }, { "Fn::FindInMap": [ "IPAddress", "K8sWorker1", "SufFix" ] } ] ] },
     "Tags": [ { "Key": "Name", "Value": { "Fn::Join": [ "_", [ { "Ref": "TagPreFix" }, { "Ref": "AWS::StackName" }, "K8sWorker1NetworkInterface" ] ] } } ]
    }
   },
   "K8sWorker2NetworkInterface": {
    "Type": "AWS::EC2::NetworkInterface",
    "Condition": "CreateWorkerNode2",
-   "DependsOn": [ "K8sNodeSecurityGroup", "K8sNodeSubnet" ],
+   "DependsOn": [ "K8sNodeSecurityGroup", "NodesSubnet" ],
    "Properties": {
     "Description": "Network Interface for K8s Worker 2",
     "GroupSet": [ {"Ref": "K8sNodeSecurityGroup"} ],
     "SourceDestCheck": "false",
-    "SubnetId": { "Ref": "K8sNodeSubnet" },
-    "PrivateIpAddress": { "Fn::Join": [ ".", [ { "Fn::FindInMap": [ "IPAddress", "VPC", "PreFix" ] }, { "Fn::FindInMap": [ "IPAddress", "K8sNode", "InFix" ] }, { "Fn::FindInMap": [ "IPAddress", "K8sWorker2", "SufFix" ] } ] ] },
+    "SubnetId": { "Ref": "NodesSubnet" },
+    "PrivateIpAddress": { "Fn::Join": [ ".", [ { "Fn::FindInMap": [ "IPAddress", "VPC", "PreFix" ] }, { "Fn::FindInMap": [ "IPAddress", "Nodes", "InFix" ] }, { "Fn::FindInMap": [ "IPAddress", "K8sWorker2", "SufFix" ] } ] ] },
     "Tags": [ { "Key": "Name", "Value": { "Fn::Join": [ "_", [ { "Ref": "TagPreFix" }, { "Ref": "AWS::StackName" }, "K8sWorker2NetworkInterface" ] ] } } ]
    }
   },
   "K8sWorker3NetworkInterface": {
    "Type": "AWS::EC2::NetworkInterface",
    "Condition": "CreateWorkerNode3",
-   "DependsOn": [ "K8sNodeSecurityGroup", "K8sNodeSubnet" ],
+   "DependsOn": [ "K8sNodeSecurityGroup", "NodesSubnet" ],
    "Properties": {
     "Description": "Network Interface for K8s Worker 3",
     "GroupSet": [ {"Ref": "K8sNodeSecurityGroup"} ],
     "SourceDestCheck": "false",
-    "SubnetId": { "Ref": "K8sNodeSubnet" },
-    "PrivateIpAddress": { "Fn::Join": [ ".", [ { "Fn::FindInMap": [ "IPAddress", "VPC", "PreFix" ] }, { "Fn::FindInMap": [ "IPAddress", "K8sNode", "InFix" ] }, { "Fn::FindInMap": [ "IPAddress", "K8sWorker3", "SufFix" ] } ] ] },
+    "SubnetId": { "Ref": "NodesSubnet" },
+    "PrivateIpAddress": { "Fn::Join": [ ".", [ { "Fn::FindInMap": [ "IPAddress", "VPC", "PreFix" ] }, { "Fn::FindInMap": [ "IPAddress", "Nodes", "InFix" ] }, { "Fn::FindInMap": [ "IPAddress", "K8sWorker3", "SufFix" ] } ] ] },
     "Tags": [ { "Key": "Name", "Value": { "Fn::Join": [ "_", [ { "Ref": "TagPreFix" }, { "Ref": "AWS::StackName" }, "K8sWorker3NetworkInterface" ] ] } } ]
    }
   },
   "K8sWorker4NetworkInterface": {
    "Type": "AWS::EC2::NetworkInterface",
    "Condition": "CreateWorkerNode4",
-   "DependsOn": [ "K8sNodeSecurityGroup", "K8sNodeSubnet" ],
+   "DependsOn": [ "K8sNodeSecurityGroup", "NodesSubnet" ],
    "Properties": {
     "Description": "Network Interface for K8s Worker 4",
     "GroupSet": [ {"Ref": "K8sNodeSecurityGroup"} ],
     "SourceDestCheck": "false",
-    "SubnetId": { "Ref": "K8sNodeSubnet" },
-    "PrivateIpAddress": { "Fn::Join": [ ".", [ { "Fn::FindInMap": [ "IPAddress", "VPC", "PreFix" ] }, { "Fn::FindInMap": [ "IPAddress", "K8sNode", "InFix" ] }, { "Fn::FindInMap": [ "IPAddress", "K8sWorker4", "SufFix" ] } ] ] },
+    "SubnetId": { "Ref": "NodesSubnet" },
+    "PrivateIpAddress": { "Fn::Join": [ ".", [ { "Fn::FindInMap": [ "IPAddress", "VPC", "PreFix" ] }, { "Fn::FindInMap": [ "IPAddress", "Nodes", "InFix" ] }, { "Fn::FindInMap": [ "IPAddress", "K8sWorker4", "SufFix" ] } ] ] },
     "Tags": [ { "Key": "Name", "Value": { "Fn::Join": [ "_", [ { "Ref": "TagPreFix" }, { "Ref": "AWS::StackName" }, "K8sWorker4NetworkInterface" ] ] } } ]
    }
   },
   "K8sWorker5NetworkInterface": {
    "Type": "AWS::EC2::NetworkInterface",
    "Condition": "CreateWorkerNode5",
-   "DependsOn": [ "K8sNodeSecurityGroup", "K8sNodeSubnet" ],
+   "DependsOn": [ "K8sNodeSecurityGroup", "NodesSubnet" ],
    "Properties": {
     "Description": "Network Interface for K8s Worker 5",
     "GroupSet": [ {"Ref": "K8sNodeSecurityGroup"} ],
     "SourceDestCheck": "false",
-    "SubnetId": { "Ref": "K8sNodeSubnet" },
-    "PrivateIpAddress": { "Fn::Join": [ ".", [ { "Fn::FindInMap": [ "IPAddress", "VPC", "PreFix" ] }, { "Fn::FindInMap": [ "IPAddress", "K8sNode", "InFix" ] }, { "Fn::FindInMap": [ "IPAddress", "K8sWorker5", "SufFix" ] } ] ] },
+    "SubnetId": { "Ref": "NodesSubnet" },
+    "PrivateIpAddress": { "Fn::Join": [ ".", [ { "Fn::FindInMap": [ "IPAddress", "VPC", "PreFix" ] }, { "Fn::FindInMap": [ "IPAddress", "Nodes", "InFix" ] }, { "Fn::FindInMap": [ "IPAddress", "K8sWorker5", "SufFix" ] } ] ] },
     "Tags": [ { "Key": "Name", "Value": { "Fn::Join": [ "_", [ { "Ref": "TagPreFix" }, { "Ref": "AWS::StackName" }, "K8sWorker5NetworkInterface" ] ] } } ]
    }
   },
   "K8sWorker6NetworkInterface": {
    "Type": "AWS::EC2::NetworkInterface",
    "Condition": "CreateWorkerNode6",
-   "DependsOn": [ "K8sNodeSecurityGroup", "K8sNodeSubnet" ],
+   "DependsOn": [ "K8sNodeSecurityGroup", "NodesSubnet" ],
    "Properties": {
     "Description": "Network Interface for K8s Worker 6",
     "GroupSet": [ {"Ref": "K8sNodeSecurityGroup"} ],
     "SourceDestCheck": "false",
-    "SubnetId": { "Ref": "K8sNodeSubnet" },
-    "PrivateIpAddress": { "Fn::Join": [ ".", [ { "Fn::FindInMap": [ "IPAddress", "VPC", "PreFix" ] }, { "Fn::FindInMap": [ "IPAddress", "K8sNode", "InFix" ] }, { "Fn::FindInMap": [ "IPAddress", "K8sWorker6", "SufFix" ] } ] ] },
+    "SubnetId": { "Ref": "NodesSubnet" },
+    "PrivateIpAddress": { "Fn::Join": [ ".", [ { "Fn::FindInMap": [ "IPAddress", "VPC", "PreFix" ] }, { "Fn::FindInMap": [ "IPAddress", "Nodes", "InFix" ] }, { "Fn::FindInMap": [ "IPAddress", "K8sWorker6", "SufFix" ] } ] ] },
     "Tags": [ { "Key": "Name", "Value": { "Fn::Join": [ "_", [ { "Ref": "TagPreFix" }, { "Ref": "AWS::StackName" }, "K8sWorker6NetworkInterface" ] ] } } ]
    }
   },
   "K8sWorker7NetworkInterface": {
    "Type": "AWS::EC2::NetworkInterface",
    "Condition": "CreateWorkerNode7",
-   "DependsOn": [ "K8sNodeSecurityGroup", "K8sNodeSubnet" ],
+   "DependsOn": [ "K8sNodeSecurityGroup", "NodesSubnet" ],
    "Properties": {
     "Description": "Network Interface for K8s Worker 7",
     "GroupSet": [ {"Ref": "K8sNodeSecurityGroup"} ],
     "SourceDestCheck": "false",
-    "SubnetId": { "Ref": "K8sNodeSubnet" },
-    "PrivateIpAddress": { "Fn::Join": [ ".", [ { "Fn::FindInMap": [ "IPAddress", "VPC", "PreFix" ] }, { "Fn::FindInMap": [ "IPAddress", "K8sNode", "InFix" ] }, { "Fn::FindInMap": [ "IPAddress", "K8sWorker7", "SufFix" ] } ] ] },
+    "SubnetId": { "Ref": "NodesSubnet" },
+    "PrivateIpAddress": { "Fn::Join": [ ".", [ { "Fn::FindInMap": [ "IPAddress", "VPC", "PreFix" ] }, { "Fn::FindInMap": [ "IPAddress", "Nodes", "InFix" ] }, { "Fn::FindInMap": [ "IPAddress", "K8sWorker7", "SufFix" ] } ] ] },
     "Tags": [ { "Key": "Name", "Value": { "Fn::Join": [ "_", [ { "Ref": "TagPreFix" }, { "Ref": "AWS::StackName" }, "K8sWorker7NetworkInterface" ] ] } } ]
    }
   },
   "K8sWorker8NetworkInterface": {
    "Type": "AWS::EC2::NetworkInterface",
    "Condition": "CreateWorkerNode8",
-   "DependsOn": [ "K8sNodeSecurityGroup", "K8sNodeSubnet" ],
+   "DependsOn": [ "K8sNodeSecurityGroup", "NodesSubnet" ],
    "Properties": {
     "Description": "Network Interface for K8s Worker 8",
     "GroupSet": [ {"Ref": "K8sNodeSecurityGroup"} ],
     "SourceDestCheck": "false",
-    "SubnetId": { "Ref": "K8sNodeSubnet" },
-    "PrivateIpAddress": { "Fn::Join": [ ".", [ { "Fn::FindInMap": [ "IPAddress", "VPC", "PreFix" ] }, { "Fn::FindInMap": [ "IPAddress", "K8sNode", "InFix" ] }, { "Fn::FindInMap": [ "IPAddress", "K8sWorker8", "SufFix" ] } ] ] },
+    "SubnetId": { "Ref": "NodesSubnet" },
+    "PrivateIpAddress": { "Fn::Join": [ ".", [ { "Fn::FindInMap": [ "IPAddress", "VPC", "PreFix" ] }, { "Fn::FindInMap": [ "IPAddress", "Nodes", "InFix" ] }, { "Fn::FindInMap": [ "IPAddress", "K8sWorker8", "SufFix" ] } ] ] },
     "Tags": [ { "Key": "Name", "Value": { "Fn::Join": [ "_", [ { "Ref": "TagPreFix" }, { "Ref": "AWS::StackName" }, "K8sWorker8NetworkInterface" ] ] } } ]
    }
   },
   "K8sWorker9NetworkInterface": {
    "Type": "AWS::EC2::NetworkInterface",
    "Condition": "CreateWorkerNode9",
-   "DependsOn": [ "K8sNodeSecurityGroup", "K8sNodeSubnet" ],
+   "DependsOn": [ "K8sNodeSecurityGroup", "NodesSubnet" ],
    "Properties": {
     "Description": "Network Interface for K8s Worker 9",
     "GroupSet": [ {"Ref": "K8sNodeSecurityGroup"} ],
     "SourceDestCheck": "false",
-    "SubnetId": { "Ref": "K8sNodeSubnet" },
-    "PrivateIpAddress": { "Fn::Join": [ ".", [ { "Fn::FindInMap": [ "IPAddress", "VPC", "PreFix" ] }, { "Fn::FindInMap": [ "IPAddress", "K8sNode", "InFix" ] }, { "Fn::FindInMap": [ "IPAddress", "K8sWorker9", "SufFix" ] } ] ] },
+    "SubnetId": { "Ref": "NodesSubnet" },
+    "PrivateIpAddress": { "Fn::Join": [ ".", [ { "Fn::FindInMap": [ "IPAddress", "VPC", "PreFix" ] }, { "Fn::FindInMap": [ "IPAddress", "Nodes", "InFix" ] }, { "Fn::FindInMap": [ "IPAddress", "K8sWorker9", "SufFix" ] } ] ] },
     "Tags": [ { "Key": "Name", "Value": { "Fn::Join": [ "_", [ { "Ref": "TagPreFix" }, { "Ref": "AWS::StackName" }, "K8sWorker9NetworkInterface" ] ] } } ]
    }
   },
@@ -1781,7 +1716,7 @@
         "owner": "root"
        },
        "/config/lidsa/IPToAWSInstanceMetaData": {
-        "content": { "Fn::Join": [ ".", [ { "Fn::FindInMap": [ "IPAddress", "VPC", "PreFix" ] }, { "Fn::FindInMap": [ "IPAddress", "K8sNode", "InFix" ] }, { "Fn::FindInMap": [ "IPAddress", "BigIP", "SufFix" ] } ] ] },
+        "content": { "Fn::Join": [ ".", [ { "Fn::FindInMap": [ "IPAddress", "VPC", "PreFix" ] }, { "Fn::FindInMap": [ "IPAddress", "Nodes", "InFix" ] }, { "Fn::FindInMap": [ "IPAddress", "BigIP", "SufFix" ] } ] ] },
         "group": "root",
         "mode": "000666",
         "owner": "root"
@@ -1956,17 +1891,17 @@
      "chmod 600 /home/ubuntu/.ssh/authorized_keys\n",
      "timedatectl set-timezone \"", { "Ref": "TimeZone" }, "\"\n",
 
-     "IFName=`ip -4 -o address | grep \"", { "Fn::Join": [ ".", [ { "Fn::FindInMap": [ "IPAddress", "VPC", "PreFix" ] }, { "Fn::FindInMap": [ "IPAddress", "K8sNode", "InFix" ] }, { "Fn::FindInMap": [ "IPAddress", "K8sMaster1", "SufFix" ] } ] ] }, "\" | awk '{print $2}'`\n",
+     "IFName=`ip -4 -o address | grep \"", { "Fn::Join": [ ".", [ { "Fn::FindInMap": [ "IPAddress", "VPC", "PreFix" ] }, { "Fn::FindInMap": [ "IPAddress", "Nodes", "InFix" ] }, { "Fn::FindInMap": [ "IPAddress", "K8sMaster1", "SufFix" ] } ] ] }, "\" | awk '{print $2}'`\n",
      "echo \"`date +%Y%m%d%H%M%S` Interface Name : $IFName .\"\n",
      "sudo printf \"network: {config: disabled}\" >> /etc/cloud/cloud.cfg.d/subiquity-disable-cloudinit-networking.cfg\n",
      "sudo rm -frv /etc/netplan/*\n",
-     "sudo printf \"network:\\n  ethernets:\\n    $IFName:\\n      addresses: [", { "Fn::Join": [ ".", [ { "Fn::FindInMap": [ "IPAddress", "VPC", "PreFix" ] }, { "Fn::FindInMap": [ "IPAddress", "K8sNode", "InFix" ] }, { "Fn::FindInMap": [ "IPAddress", "K8sMaster1", "SufFix" ] } ] ] }, "/24]\\n      gateway4: ", { "Fn::Join": [ ".", [ { "Fn::FindInMap": [ "IPAddress", "VPC", "PreFix" ] }, { "Fn::FindInMap": [ "IPAddress", "K8sNode", "InFix" ] }, { "Fn::FindInMap": [ "IPAddress", "BigIP", "SufFix" ] } ] ] }, "\\n      nameservers:\\n        addresses: [", { "Fn::FindInMap": [ "IPAddress", "VPC", "PreFix" ] }, ".0.2]\\n  version: 2\\n\" > /etc/netplan/50-cloud-init.yaml\n",
+     "sudo printf \"network:\\n  ethernets:\\n    $IFName:\\n      addresses: [", { "Fn::Join": [ ".", [ { "Fn::FindInMap": [ "IPAddress", "VPC", "PreFix" ] }, { "Fn::FindInMap": [ "IPAddress", "Nodes", "InFix" ] }, { "Fn::FindInMap": [ "IPAddress", "K8sMaster1", "SufFix" ] } ] ] }, "/24]\\n      gateway4: ", { "Fn::Join": [ ".", [ { "Fn::FindInMap": [ "IPAddress", "VPC", "PreFix" ] }, { "Fn::FindInMap": [ "IPAddress", "Nodes", "InFix" ] }, { "Fn::FindInMap": [ "IPAddress", "BigIP", "SufFix" ] } ] ] }, "\\n      nameservers:\\n        addresses: [", { "Fn::FindInMap": [ "IPAddress", "VPC", "PreFix" ] }, ".0.2]\\n  version: 2\\n\" > /etc/netplan/50-cloud-init.yaml\n",
      "sudo netplan apply\n",
 
      "Loop=\"Yes\"\n",
      "Loop_Period=\"1m\"\n",
      "User=admin\n",
-     "BigIPAddress=\"", { "Fn::Join": [ ".", [ { "Fn::FindInMap": [ "IPAddress", "VPC", "PreFix" ] }, { "Fn::FindInMap": [ "IPAddress", "K8sNode", "InFix" ] }, { "Fn::FindInMap": [ "IPAddress", "BigIP", "SufFix" ] } ] ] }, "\"\n",
+     "BigIPAddress=\"", { "Fn::Join": [ ".", [ { "Fn::FindInMap": [ "IPAddress", "VPC", "PreFix" ] }, { "Fn::FindInMap": [ "IPAddress", "Nodes", "InFix" ] }, { "Fn::FindInMap": [ "IPAddress", "BigIP", "SufFix" ] } ] ] }, "\"\n",
      "while ( [ \"$Loop\" == \"Yes\" ] ) ; do\n",
      " if ( runuser -u ubuntu -- ssh -o StrictHostKeyChecking=no $User@$BigIPAddress run util bash -c /config/UpGradeStatus.sh | egrep -o \"^([0-9]{14} Custom Configuration Finished \\.)$\" ) ; then\n",
      "  echo \"`date +%Y%m%d%H%M%S` Big-IP is Ready .\"\n",
@@ -2068,32 +2003,32 @@
      "sudo bash /home/ubuntu/CommonK8sPreparationScript\n",
      "sudo bash /home/ubuntu/K8sMasterPreparationScript ", { "Fn::FindInMap": [ "IPAddress", "K8sPod", "CIDR" ] }, " ", { "Fn::FindInMap": [ "IPAddress", "K8sService", "CIDR" ] }, " ", { "Ref": "ClusterNetworkConfiguration" }, "\n",
      "sudo bash /home/ubuntu/K8sWorkerPreparationScript ",
-      { "Fn::Join": [ ".", [ { "Fn::FindInMap": [ "IPAddress", "VPC", "PreFix" ] }, { "Fn::FindInMap": [ "IPAddress", "K8sNode", "InFix" ] }, { "Fn::FindInMap": [ "IPAddress", "K8sWorker1", "SufFix" ] } ] ] },
-      { "Fn::If": [ "CreateWorkerNode2", { "Fn::Join": [ "", [ " ", { "Fn::Join": [ ".", [ { "Fn::FindInMap": [ "IPAddress", "VPC", "PreFix" ] }, { "Fn::FindInMap": [ "IPAddress", "K8sNode", "InFix" ] }, { "Fn::FindInMap": [ "IPAddress", "K8sWorker2", "SufFix" ] } ] ] } ] ] }, "" ] },
-      { "Fn::If": [ "CreateWorkerNode3", { "Fn::Join": [ "", [ " ", { "Fn::Join": [ ".", [ { "Fn::FindInMap": [ "IPAddress", "VPC", "PreFix" ] }, { "Fn::FindInMap": [ "IPAddress", "K8sNode", "InFix" ] }, { "Fn::FindInMap": [ "IPAddress", "K8sWorker3", "SufFix" ] } ] ] } ] ] }, "" ] },
-      { "Fn::If": [ "CreateWorkerNode4", { "Fn::Join": [ "", [ " ", { "Fn::Join": [ ".", [ { "Fn::FindInMap": [ "IPAddress", "VPC", "PreFix" ] }, { "Fn::FindInMap": [ "IPAddress", "K8sNode", "InFix" ] }, { "Fn::FindInMap": [ "IPAddress", "K8sWorker4", "SufFix" ] } ] ] } ] ] }, "" ] },
-      { "Fn::If": [ "CreateWorkerNode5", { "Fn::Join": [ "", [ " ", { "Fn::Join": [ ".", [ { "Fn::FindInMap": [ "IPAddress", "VPC", "PreFix" ] }, { "Fn::FindInMap": [ "IPAddress", "K8sNode", "InFix" ] }, { "Fn::FindInMap": [ "IPAddress", "K8sWorker5", "SufFix" ] } ] ] } ] ] }, "" ] },
-      { "Fn::If": [ "CreateWorkerNode6", { "Fn::Join": [ "", [ " ", { "Fn::Join": [ ".", [ { "Fn::FindInMap": [ "IPAddress", "VPC", "PreFix" ] }, { "Fn::FindInMap": [ "IPAddress", "K8sNode", "InFix" ] }, { "Fn::FindInMap": [ "IPAddress", "K8sWorker6", "SufFix" ] } ] ] } ] ] }, "" ] },
-      { "Fn::If": [ "CreateWorkerNode7", { "Fn::Join": [ "", [ " ", { "Fn::Join": [ ".", [ { "Fn::FindInMap": [ "IPAddress", "VPC", "PreFix" ] }, { "Fn::FindInMap": [ "IPAddress", "K8sNode", "InFix" ] }, { "Fn::FindInMap": [ "IPAddress", "K8sWorker7", "SufFix" ] } ] ] } ] ] }, "" ] },
-      { "Fn::If": [ "CreateWorkerNode8", { "Fn::Join": [ "", [ " ", { "Fn::Join": [ ".", [ { "Fn::FindInMap": [ "IPAddress", "VPC", "PreFix" ] }, { "Fn::FindInMap": [ "IPAddress", "K8sNode", "InFix" ] }, { "Fn::FindInMap": [ "IPAddress", "K8sWorker8", "SufFix" ] } ] ] } ] ] }, "" ] },
-      { "Fn::If": [ "CreateWorkerNode9", { "Fn::Join": [ "", [ " ", { "Fn::Join": [ ".", [ { "Fn::FindInMap": [ "IPAddress", "VPC", "PreFix" ] }, { "Fn::FindInMap": [ "IPAddress", "K8sNode", "InFix" ] }, { "Fn::FindInMap": [ "IPAddress", "K8sWorker9", "SufFix" ] } ] ] } ] ] }, "" ] },
+      { "Fn::Join": [ ".", [ { "Fn::FindInMap": [ "IPAddress", "VPC", "PreFix" ] }, { "Fn::FindInMap": [ "IPAddress", "Nodes", "InFix" ] }, { "Fn::FindInMap": [ "IPAddress", "K8sWorker1", "SufFix" ] } ] ] },
+      { "Fn::If": [ "CreateWorkerNode2", { "Fn::Join": [ "", [ " ", { "Fn::Join": [ ".", [ { "Fn::FindInMap": [ "IPAddress", "VPC", "PreFix" ] }, { "Fn::FindInMap": [ "IPAddress", "Nodes", "InFix" ] }, { "Fn::FindInMap": [ "IPAddress", "K8sWorker2", "SufFix" ] } ] ] } ] ] }, "" ] },
+      { "Fn::If": [ "CreateWorkerNode3", { "Fn::Join": [ "", [ " ", { "Fn::Join": [ ".", [ { "Fn::FindInMap": [ "IPAddress", "VPC", "PreFix" ] }, { "Fn::FindInMap": [ "IPAddress", "Nodes", "InFix" ] }, { "Fn::FindInMap": [ "IPAddress", "K8sWorker3", "SufFix" ] } ] ] } ] ] }, "" ] },
+      { "Fn::If": [ "CreateWorkerNode4", { "Fn::Join": [ "", [ " ", { "Fn::Join": [ ".", [ { "Fn::FindInMap": [ "IPAddress", "VPC", "PreFix" ] }, { "Fn::FindInMap": [ "IPAddress", "Nodes", "InFix" ] }, { "Fn::FindInMap": [ "IPAddress", "K8sWorker4", "SufFix" ] } ] ] } ] ] }, "" ] },
+      { "Fn::If": [ "CreateWorkerNode5", { "Fn::Join": [ "", [ " ", { "Fn::Join": [ ".", [ { "Fn::FindInMap": [ "IPAddress", "VPC", "PreFix" ] }, { "Fn::FindInMap": [ "IPAddress", "Nodes", "InFix" ] }, { "Fn::FindInMap": [ "IPAddress", "K8sWorker5", "SufFix" ] } ] ] } ] ] }, "" ] },
+      { "Fn::If": [ "CreateWorkerNode6", { "Fn::Join": [ "", [ " ", { "Fn::Join": [ ".", [ { "Fn::FindInMap": [ "IPAddress", "VPC", "PreFix" ] }, { "Fn::FindInMap": [ "IPAddress", "Nodes", "InFix" ] }, { "Fn::FindInMap": [ "IPAddress", "K8sWorker6", "SufFix" ] } ] ] } ] ] }, "" ] },
+      { "Fn::If": [ "CreateWorkerNode7", { "Fn::Join": [ "", [ " ", { "Fn::Join": [ ".", [ { "Fn::FindInMap": [ "IPAddress", "VPC", "PreFix" ] }, { "Fn::FindInMap": [ "IPAddress", "Nodes", "InFix" ] }, { "Fn::FindInMap": [ "IPAddress", "K8sWorker7", "SufFix" ] } ] ] } ] ] }, "" ] },
+      { "Fn::If": [ "CreateWorkerNode8", { "Fn::Join": [ "", [ " ", { "Fn::Join": [ ".", [ { "Fn::FindInMap": [ "IPAddress", "VPC", "PreFix" ] }, { "Fn::FindInMap": [ "IPAddress", "Nodes", "InFix" ] }, { "Fn::FindInMap": [ "IPAddress", "K8sWorker8", "SufFix" ] } ] ] } ] ] }, "" ] },
+      { "Fn::If": [ "CreateWorkerNode9", { "Fn::Join": [ "", [ " ", { "Fn::Join": [ ".", [ { "Fn::FindInMap": [ "IPAddress", "VPC", "PreFix" ] }, { "Fn::FindInMap": [ "IPAddress", "Nodes", "InFix" ] }, { "Fn::FindInMap": [ "IPAddress", "K8sWorker9", "SufFix" ] } ] ] } ] ] }, "" ] },
      "\n",
 
      "runuser -u ubuntu -- bash /home/ubuntu/BigIPCISScript ",
-	  { "Fn::Join": [ ".", [ { "Fn::FindInMap": [ "IPAddress", "VPC", "PreFix" ] }, { "Fn::FindInMap": [ "IPAddress", "K8sNode", "InFix" ] }, { "Fn::FindInMap": [ "IPAddress", "BigIP", "SufFix" ] } ] ] }, " ",
+	  { "Fn::Join": [ ".", [ { "Fn::FindInMap": [ "IPAddress", "VPC", "PreFix" ] }, { "Fn::FindInMap": [ "IPAddress", "Nodes", "InFix" ] }, { "Fn::FindInMap": [ "IPAddress", "BigIP", "SufFix" ] } ] ] }, " ",
       { "Ref": "BigIPManagementGUIPort" }, " ",
       { "Fn::FindInMap": [ "IPAddress", "K8sPod", "CIDR" ] }, " ",
       { "Ref": "BigIPAdminPassword" }, " ",
-      { "Fn::Join": [ ".", [ { "Fn::FindInMap": [ "IPAddress", "VPC", "PreFix" ] }, { "Fn::FindInMap": [ "IPAddress", "K8sNode", "InFix" ] }, { "Fn::FindInMap": [ "IPAddress", "K8sMaster1", "SufFix" ] } ] ] }, " ",
-      { "Fn::Join": [ ".", [ { "Fn::FindInMap": [ "IPAddress", "VPC", "PreFix" ] }, { "Fn::FindInMap": [ "IPAddress", "K8sNode", "InFix" ] }, { "Fn::FindInMap": [ "IPAddress", "K8sWorker1", "SufFix" ] } ] ] },
-      { "Fn::If": [ "CreateWorkerNode2", { "Fn::Join": [ "", [ " ", { "Fn::Join": [ ".", [ { "Fn::FindInMap": [ "IPAddress", "VPC", "PreFix" ] }, { "Fn::FindInMap": [ "IPAddress", "K8sNode", "InFix" ] }, { "Fn::FindInMap": [ "IPAddress", "K8sWorker2", "SufFix" ] } ] ] } ] ] }, "" ] },
-      { "Fn::If": [ "CreateWorkerNode3", { "Fn::Join": [ "", [ " ", { "Fn::Join": [ ".", [ { "Fn::FindInMap": [ "IPAddress", "VPC", "PreFix" ] }, { "Fn::FindInMap": [ "IPAddress", "K8sNode", "InFix" ] }, { "Fn::FindInMap": [ "IPAddress", "K8sWorker3", "SufFix" ] } ] ] } ] ] }, "" ] },
-      { "Fn::If": [ "CreateWorkerNode4", { "Fn::Join": [ "", [ " ", { "Fn::Join": [ ".", [ { "Fn::FindInMap": [ "IPAddress", "VPC", "PreFix" ] }, { "Fn::FindInMap": [ "IPAddress", "K8sNode", "InFix" ] }, { "Fn::FindInMap": [ "IPAddress", "K8sWorker4", "SufFix" ] } ] ] } ] ] }, "" ] },
-      { "Fn::If": [ "CreateWorkerNode5", { "Fn::Join": [ "", [ " ", { "Fn::Join": [ ".", [ { "Fn::FindInMap": [ "IPAddress", "VPC", "PreFix" ] }, { "Fn::FindInMap": [ "IPAddress", "K8sNode", "InFix" ] }, { "Fn::FindInMap": [ "IPAddress", "K8sWorker5", "SufFix" ] } ] ] } ] ] }, "" ] },
-      { "Fn::If": [ "CreateWorkerNode6", { "Fn::Join": [ "", [ " ", { "Fn::Join": [ ".", [ { "Fn::FindInMap": [ "IPAddress", "VPC", "PreFix" ] }, { "Fn::FindInMap": [ "IPAddress", "K8sNode", "InFix" ] }, { "Fn::FindInMap": [ "IPAddress", "K8sWorker6", "SufFix" ] } ] ] } ] ] }, "" ] },
-      { "Fn::If": [ "CreateWorkerNode7", { "Fn::Join": [ "", [ " ", { "Fn::Join": [ ".", [ { "Fn::FindInMap": [ "IPAddress", "VPC", "PreFix" ] }, { "Fn::FindInMap": [ "IPAddress", "K8sNode", "InFix" ] }, { "Fn::FindInMap": [ "IPAddress", "K8sWorker7", "SufFix" ] } ] ] } ] ] }, "" ] },
-      { "Fn::If": [ "CreateWorkerNode8", { "Fn::Join": [ "", [ " ", { "Fn::Join": [ ".", [ { "Fn::FindInMap": [ "IPAddress", "VPC", "PreFix" ] }, { "Fn::FindInMap": [ "IPAddress", "K8sNode", "InFix" ] }, { "Fn::FindInMap": [ "IPAddress", "K8sWorker8", "SufFix" ] } ] ] } ] ] }, "" ] },
-      { "Fn::If": [ "CreateWorkerNode9", { "Fn::Join": [ "", [ " ", { "Fn::Join": [ ".", [ { "Fn::FindInMap": [ "IPAddress", "VPC", "PreFix" ] }, { "Fn::FindInMap": [ "IPAddress", "K8sNode", "InFix" ] }, { "Fn::FindInMap": [ "IPAddress", "K8sWorker9", "SufFix" ] } ] ] } ] ] }, "" ] },
+      { "Fn::Join": [ ".", [ { "Fn::FindInMap": [ "IPAddress", "VPC", "PreFix" ] }, { "Fn::FindInMap": [ "IPAddress", "Nodes", "InFix" ] }, { "Fn::FindInMap": [ "IPAddress", "K8sMaster1", "SufFix" ] } ] ] }, " ",
+      { "Fn::Join": [ ".", [ { "Fn::FindInMap": [ "IPAddress", "VPC", "PreFix" ] }, { "Fn::FindInMap": [ "IPAddress", "Nodes", "InFix" ] }, { "Fn::FindInMap": [ "IPAddress", "K8sWorker1", "SufFix" ] } ] ] },
+      { "Fn::If": [ "CreateWorkerNode2", { "Fn::Join": [ "", [ " ", { "Fn::Join": [ ".", [ { "Fn::FindInMap": [ "IPAddress", "VPC", "PreFix" ] }, { "Fn::FindInMap": [ "IPAddress", "Nodes", "InFix" ] }, { "Fn::FindInMap": [ "IPAddress", "K8sWorker2", "SufFix" ] } ] ] } ] ] }, "" ] },
+      { "Fn::If": [ "CreateWorkerNode3", { "Fn::Join": [ "", [ " ", { "Fn::Join": [ ".", [ { "Fn::FindInMap": [ "IPAddress", "VPC", "PreFix" ] }, { "Fn::FindInMap": [ "IPAddress", "Nodes", "InFix" ] }, { "Fn::FindInMap": [ "IPAddress", "K8sWorker3", "SufFix" ] } ] ] } ] ] }, "" ] },
+      { "Fn::If": [ "CreateWorkerNode4", { "Fn::Join": [ "", [ " ", { "Fn::Join": [ ".", [ { "Fn::FindInMap": [ "IPAddress", "VPC", "PreFix" ] }, { "Fn::FindInMap": [ "IPAddress", "Nodes", "InFix" ] }, { "Fn::FindInMap": [ "IPAddress", "K8sWorker4", "SufFix" ] } ] ] } ] ] }, "" ] },
+      { "Fn::If": [ "CreateWorkerNode5", { "Fn::Join": [ "", [ " ", { "Fn::Join": [ ".", [ { "Fn::FindInMap": [ "IPAddress", "VPC", "PreFix" ] }, { "Fn::FindInMap": [ "IPAddress", "Nodes", "InFix" ] }, { "Fn::FindInMap": [ "IPAddress", "K8sWorker5", "SufFix" ] } ] ] } ] ] }, "" ] },
+      { "Fn::If": [ "CreateWorkerNode6", { "Fn::Join": [ "", [ " ", { "Fn::Join": [ ".", [ { "Fn::FindInMap": [ "IPAddress", "VPC", "PreFix" ] }, { "Fn::FindInMap": [ "IPAddress", "Nodes", "InFix" ] }, { "Fn::FindInMap": [ "IPAddress", "K8sWorker6", "SufFix" ] } ] ] } ] ] }, "" ] },
+      { "Fn::If": [ "CreateWorkerNode7", { "Fn::Join": [ "", [ " ", { "Fn::Join": [ ".", [ { "Fn::FindInMap": [ "IPAddress", "VPC", "PreFix" ] }, { "Fn::FindInMap": [ "IPAddress", "Nodes", "InFix" ] }, { "Fn::FindInMap": [ "IPAddress", "K8sWorker7", "SufFix" ] } ] ] } ] ] }, "" ] },
+      { "Fn::If": [ "CreateWorkerNode8", { "Fn::Join": [ "", [ " ", { "Fn::Join": [ ".", [ { "Fn::FindInMap": [ "IPAddress", "VPC", "PreFix" ] }, { "Fn::FindInMap": [ "IPAddress", "Nodes", "InFix" ] }, { "Fn::FindInMap": [ "IPAddress", "K8sWorker8", "SufFix" ] } ] ] } ] ] }, "" ] },
+      { "Fn::If": [ "CreateWorkerNode9", { "Fn::Join": [ "", [ " ", { "Fn::Join": [ ".", [ { "Fn::FindInMap": [ "IPAddress", "VPC", "PreFix" ] }, { "Fn::FindInMap": [ "IPAddress", "Nodes", "InFix" ] }, { "Fn::FindInMap": [ "IPAddress", "K8sWorker9", "SufFix" ] } ] ] } ] ] }, "" ] },
 	 "\n",
 
      "sudo bash /home/ubuntu/K8sServicePreparationScript\n",
@@ -2139,17 +2074,17 @@
      "chmod 600 /home/ubuntu/.ssh/authorized_keys\n",
      "timedatectl set-timezone \"", { "Ref": "TimeZone" }, "\"\n",
 
-     "IFName=`ip -4 -o address | grep \"", { "Fn::Join": [ ".", [ { "Fn::FindInMap": [ "IPAddress", "VPC", "PreFix" ] }, { "Fn::FindInMap": [ "IPAddress", "K8sNode", "InFix" ] }, { "Fn::FindInMap": [ "IPAddress", "K8sWorker1", "SufFix" ] } ] ] }, "\" | awk '{print $2}'`\n",
+     "IFName=`ip -4 -o address | grep \"", { "Fn::Join": [ ".", [ { "Fn::FindInMap": [ "IPAddress", "VPC", "PreFix" ] }, { "Fn::FindInMap": [ "IPAddress", "Nodes", "InFix" ] }, { "Fn::FindInMap": [ "IPAddress", "K8sWorker1", "SufFix" ] } ] ] }, "\" | awk '{print $2}'`\n",
      "echo \"`date +%Y%m%d%H%M%S` Interface Name : $IFName .\"\n",
      "sudo printf \"network: {config: disabled}\" >> /etc/cloud/cloud.cfg.d/subiquity-disable-cloudinit-networking.cfg\n",
      "sudo rm -frv /etc/netplan/*\n",
-     "sudo printf \"network:\\n  ethernets:\\n    $IFName:\\n      addresses: [", { "Fn::Join": [ ".", [ { "Fn::FindInMap": [ "IPAddress", "VPC", "PreFix" ] }, { "Fn::FindInMap": [ "IPAddress", "K8sNode", "InFix" ] }, { "Fn::FindInMap": [ "IPAddress", "K8sWorker1", "SufFix" ] } ] ] }, "/24]\\n      gateway4: ", { "Fn::Join": [ ".", [ { "Fn::FindInMap": [ "IPAddress", "VPC", "PreFix" ] }, { "Fn::FindInMap": [ "IPAddress", "K8sNode", "InFix" ] }, { "Fn::FindInMap": [ "IPAddress", "BigIP", "SufFix" ] } ] ] }, "\\n      nameservers:\\n        addresses: [", { "Fn::FindInMap": [ "IPAddress", "VPC", "PreFix" ] }, ".0.2]\\n  version: 2\\n\" > /etc/netplan/50-cloud-init.yaml\n",
+     "sudo printf \"network:\\n  ethernets:\\n    $IFName:\\n      addresses: [", { "Fn::Join": [ ".", [ { "Fn::FindInMap": [ "IPAddress", "VPC", "PreFix" ] }, { "Fn::FindInMap": [ "IPAddress", "Nodes", "InFix" ] }, { "Fn::FindInMap": [ "IPAddress", "K8sWorker1", "SufFix" ] } ] ] }, "/24]\\n      gateway4: ", { "Fn::Join": [ ".", [ { "Fn::FindInMap": [ "IPAddress", "VPC", "PreFix" ] }, { "Fn::FindInMap": [ "IPAddress", "Nodes", "InFix" ] }, { "Fn::FindInMap": [ "IPAddress", "BigIP", "SufFix" ] } ] ] }, "\\n      nameservers:\\n        addresses: [", { "Fn::FindInMap": [ "IPAddress", "VPC", "PreFix" ] }, ".0.2]\\n  version: 2\\n\" > /etc/netplan/50-cloud-init.yaml\n",
      "sudo netplan apply\n",
 
      "Loop=\"Yes\"\n",
      "Loop_Period=\"1m\"\n",
      "User=admin\n",
-     "BigIPAddress=\"", { "Fn::Join": [ ".", [ { "Fn::FindInMap": [ "IPAddress", "VPC", "PreFix" ] }, { "Fn::FindInMap": [ "IPAddress", "K8sNode", "InFix" ] }, { "Fn::FindInMap": [ "IPAddress", "BigIP", "SufFix" ] } ] ] }, "\"\n",
+     "BigIPAddress=\"", { "Fn::Join": [ ".", [ { "Fn::FindInMap": [ "IPAddress", "VPC", "PreFix" ] }, { "Fn::FindInMap": [ "IPAddress", "Nodes", "InFix" ] }, { "Fn::FindInMap": [ "IPAddress", "BigIP", "SufFix" ] } ] ] }, "\"\n",
      "while ( [ \"$Loop\" == \"Yes\" ] ) ; do\n",
      " if ( runuser -u ubuntu -- ssh -o StrictHostKeyChecking=no $User@$BigIPAddress run util bash -c /config/UpGradeStatus.sh | egrep -o \"^([0-9]{14} Custom Configuration Finished \\.)$\" ) ; then\n",
      "  echo \"`date +%Y%m%d%H%M%S` Big-IP is Ready .\"\n",
@@ -2234,17 +2169,17 @@
      "chmod 600 /home/ubuntu/.ssh/authorized_keys\n",
      "timedatectl set-timezone \"", { "Ref": "TimeZone" }, "\"\n",
 
-     "IFName=`ip -4 -o address | grep \"", { "Fn::Join": [ ".", [ { "Fn::FindInMap": [ "IPAddress", "VPC", "PreFix" ] }, { "Fn::FindInMap": [ "IPAddress", "K8sNode", "InFix" ] }, { "Fn::FindInMap": [ "IPAddress", "K8sWorker2", "SufFix" ] } ] ] }, "\" | awk '{print $2}'`\n",
+     "IFName=`ip -4 -o address | grep \"", { "Fn::Join": [ ".", [ { "Fn::FindInMap": [ "IPAddress", "VPC", "PreFix" ] }, { "Fn::FindInMap": [ "IPAddress", "Nodes", "InFix" ] }, { "Fn::FindInMap": [ "IPAddress", "K8sWorker2", "SufFix" ] } ] ] }, "\" | awk '{print $2}'`\n",
      "echo \"`date +%Y%m%d%H%M%S` Interface Name : $IFName .\"\n",
      "sudo printf \"network: {config: disabled}\" >> /etc/cloud/cloud.cfg.d/subiquity-disable-cloudinit-networking.cfg\n",
      "sudo rm -frv /etc/netplan/*\n",
-     "sudo printf \"network:\\n  ethernets:\\n    $IFName:\\n      addresses: [", { "Fn::Join": [ ".", [ { "Fn::FindInMap": [ "IPAddress", "VPC", "PreFix" ] }, { "Fn::FindInMap": [ "IPAddress", "K8sNode", "InFix" ] }, { "Fn::FindInMap": [ "IPAddress", "K8sWorker2", "SufFix" ] } ] ] }, "/24]\\n      gateway4: ", { "Fn::Join": [ ".", [ { "Fn::FindInMap": [ "IPAddress", "VPC", "PreFix" ] }, { "Fn::FindInMap": [ "IPAddress", "K8sNode", "InFix" ] }, { "Fn::FindInMap": [ "IPAddress", "BigIP", "SufFix" ] } ] ] }, "\\n      nameservers:\\n        addresses: [", { "Fn::FindInMap": [ "IPAddress", "VPC", "PreFix" ] }, ".0.2]\\n  version: 2\\n\" > /etc/netplan/50-cloud-init.yaml\n",
+     "sudo printf \"network:\\n  ethernets:\\n    $IFName:\\n      addresses: [", { "Fn::Join": [ ".", [ { "Fn::FindInMap": [ "IPAddress", "VPC", "PreFix" ] }, { "Fn::FindInMap": [ "IPAddress", "Nodes", "InFix" ] }, { "Fn::FindInMap": [ "IPAddress", "K8sWorker2", "SufFix" ] } ] ] }, "/24]\\n      gateway4: ", { "Fn::Join": [ ".", [ { "Fn::FindInMap": [ "IPAddress", "VPC", "PreFix" ] }, { "Fn::FindInMap": [ "IPAddress", "Nodes", "InFix" ] }, { "Fn::FindInMap": [ "IPAddress", "BigIP", "SufFix" ] } ] ] }, "\\n      nameservers:\\n        addresses: [", { "Fn::FindInMap": [ "IPAddress", "VPC", "PreFix" ] }, ".0.2]\\n  version: 2\\n\" > /etc/netplan/50-cloud-init.yaml\n",
      "sudo netplan apply\n",
 
      "Loop=\"Yes\"\n",
      "Loop_Period=\"1m\"\n",
      "User=admin\n",
-     "BigIPAddress=\"", { "Fn::Join": [ ".", [ { "Fn::FindInMap": [ "IPAddress", "VPC", "PreFix" ] }, { "Fn::FindInMap": [ "IPAddress", "K8sNode", "InFix" ] }, { "Fn::FindInMap": [ "IPAddress", "BigIP", "SufFix" ] } ] ] }, "\"\n",
+     "BigIPAddress=\"", { "Fn::Join": [ ".", [ { "Fn::FindInMap": [ "IPAddress", "VPC", "PreFix" ] }, { "Fn::FindInMap": [ "IPAddress", "Nodes", "InFix" ] }, { "Fn::FindInMap": [ "IPAddress", "BigIP", "SufFix" ] } ] ] }, "\"\n",
      "while ( [ \"$Loop\" == \"Yes\" ] ) ; do\n",
      " if ( runuser -u ubuntu -- ssh -o StrictHostKeyChecking=no $User@$BigIPAddress run util bash -c /config/UpGradeStatus.sh | egrep -o \"^([0-9]{14} Custom Configuration Finished \\.)$\" ) ; then\n",
      "  echo \"`date +%Y%m%d%H%M%S` Big-IP is Ready .\"\n",
@@ -2329,17 +2264,17 @@
      "chmod 600 /home/ubuntu/.ssh/authorized_keys\n",
      "timedatectl set-timezone \"", { "Ref": "TimeZone" }, "\"\n",
 
-     "IFName=`ip -4 -o address | grep \"", { "Fn::Join": [ ".", [ { "Fn::FindInMap": [ "IPAddress", "VPC", "PreFix" ] }, { "Fn::FindInMap": [ "IPAddress", "K8sNode", "InFix" ] }, { "Fn::FindInMap": [ "IPAddress", "K8sWorker3", "SufFix" ] } ] ] }, "\" | awk '{print $2}'`\n",
+     "IFName=`ip -4 -o address | grep \"", { "Fn::Join": [ ".", [ { "Fn::FindInMap": [ "IPAddress", "VPC", "PreFix" ] }, { "Fn::FindInMap": [ "IPAddress", "Nodes", "InFix" ] }, { "Fn::FindInMap": [ "IPAddress", "K8sWorker3", "SufFix" ] } ] ] }, "\" | awk '{print $2}'`\n",
      "echo \"`date +%Y%m%d%H%M%S` Interface Name : $IFName .\"\n",
      "sudo printf \"network: {config: disabled}\" >> /etc/cloud/cloud.cfg.d/subiquity-disable-cloudinit-networking.cfg\n",
      "sudo rm -frv /etc/netplan/*\n",
-     "sudo printf \"network:\\n  ethernets:\\n    $IFName:\\n      addresses: [", { "Fn::Join": [ ".", [ { "Fn::FindInMap": [ "IPAddress", "VPC", "PreFix" ] }, { "Fn::FindInMap": [ "IPAddress", "K8sNode", "InFix" ] }, { "Fn::FindInMap": [ "IPAddress", "K8sWorker3", "SufFix" ] } ] ] }, "/24]\\n      gateway4: ", { "Fn::Join": [ ".", [ { "Fn::FindInMap": [ "IPAddress", "VPC", "PreFix" ] }, { "Fn::FindInMap": [ "IPAddress", "K8sNode", "InFix" ] }, { "Fn::FindInMap": [ "IPAddress", "BigIP", "SufFix" ] } ] ] }, "\\n      nameservers:\\n        addresses: [", { "Fn::FindInMap": [ "IPAddress", "VPC", "PreFix" ] }, ".0.2]\\n  version: 2\\n\" > /etc/netplan/50-cloud-init.yaml\n",
+     "sudo printf \"network:\\n  ethernets:\\n    $IFName:\\n      addresses: [", { "Fn::Join": [ ".", [ { "Fn::FindInMap": [ "IPAddress", "VPC", "PreFix" ] }, { "Fn::FindInMap": [ "IPAddress", "Nodes", "InFix" ] }, { "Fn::FindInMap": [ "IPAddress", "K8sWorker3", "SufFix" ] } ] ] }, "/24]\\n      gateway4: ", { "Fn::Join": [ ".", [ { "Fn::FindInMap": [ "IPAddress", "VPC", "PreFix" ] }, { "Fn::FindInMap": [ "IPAddress", "Nodes", "InFix" ] }, { "Fn::FindInMap": [ "IPAddress", "BigIP", "SufFix" ] } ] ] }, "\\n      nameservers:\\n        addresses: [", { "Fn::FindInMap": [ "IPAddress", "VPC", "PreFix" ] }, ".0.2]\\n  version: 2\\n\" > /etc/netplan/50-cloud-init.yaml\n",
      "sudo netplan apply\n",
 
      "Loop=\"Yes\"\n",
      "Loop_Period=\"1m\"\n",
      "User=admin\n",
-     "BigIPAddress=\"", { "Fn::Join": [ ".", [ { "Fn::FindInMap": [ "IPAddress", "VPC", "PreFix" ] }, { "Fn::FindInMap": [ "IPAddress", "K8sNode", "InFix" ] }, { "Fn::FindInMap": [ "IPAddress", "BigIP", "SufFix" ] } ] ] }, "\"\n",
+     "BigIPAddress=\"", { "Fn::Join": [ ".", [ { "Fn::FindInMap": [ "IPAddress", "VPC", "PreFix" ] }, { "Fn::FindInMap": [ "IPAddress", "Nodes", "InFix" ] }, { "Fn::FindInMap": [ "IPAddress", "BigIP", "SufFix" ] } ] ] }, "\"\n",
      "while ( [ \"$Loop\" == \"Yes\" ] ) ; do\n",
      " if ( runuser -u ubuntu -- ssh -o StrictHostKeyChecking=no $User@$BigIPAddress run util bash -c /config/UpGradeStatus.sh | egrep -o \"^([0-9]{14} Custom Configuration Finished \\.)$\" ) ; then\n",
      "  echo \"`date +%Y%m%d%H%M%S` Big-IP is Ready .\"\n",
@@ -2424,17 +2359,17 @@
      "chmod 600 /home/ubuntu/.ssh/authorized_keys\n",
      "timedatectl set-timezone \"", { "Ref": "TimeZone" }, "\"\n",
 
-     "IFName=`ip -4 -o address | grep \"", { "Fn::Join": [ ".", [ { "Fn::FindInMap": [ "IPAddress", "VPC", "PreFix" ] }, { "Fn::FindInMap": [ "IPAddress", "K8sNode", "InFix" ] }, { "Fn::FindInMap": [ "IPAddress", "K8sWorker4", "SufFix" ] } ] ] }, "\" | awk '{print $2}'`\n",
+     "IFName=`ip -4 -o address | grep \"", { "Fn::Join": [ ".", [ { "Fn::FindInMap": [ "IPAddress", "VPC", "PreFix" ] }, { "Fn::FindInMap": [ "IPAddress", "Nodes", "InFix" ] }, { "Fn::FindInMap": [ "IPAddress", "K8sWorker4", "SufFix" ] } ] ] }, "\" | awk '{print $2}'`\n",
      "echo \"`date +%Y%m%d%H%M%S` Interface Name : $IFName .\"\n",
      "sudo printf \"network: {config: disabled}\" >> /etc/cloud/cloud.cfg.d/subiquity-disable-cloudinit-networking.cfg\n",
      "sudo rm -frv /etc/netplan/*\n",
-     "sudo printf \"network:\\n  ethernets:\\n    $IFName:\\n      addresses: [", { "Fn::Join": [ ".", [ { "Fn::FindInMap": [ "IPAddress", "VPC", "PreFix" ] }, { "Fn::FindInMap": [ "IPAddress", "K8sNode", "InFix" ] }, { "Fn::FindInMap": [ "IPAddress", "K8sWorker4", "SufFix" ] } ] ] }, "/24]\\n      gateway4: ", { "Fn::Join": [ ".", [ { "Fn::FindInMap": [ "IPAddress", "VPC", "PreFix" ] }, { "Fn::FindInMap": [ "IPAddress", "K8sNode", "InFix" ] }, { "Fn::FindInMap": [ "IPAddress", "BigIP", "SufFix" ] } ] ] }, "\\n      nameservers:\\n        addresses: [", { "Fn::FindInMap": [ "IPAddress", "VPC", "PreFix" ] }, ".0.2]\\n  version: 2\\n\" > /etc/netplan/50-cloud-init.yaml\n",
+     "sudo printf \"network:\\n  ethernets:\\n    $IFName:\\n      addresses: [", { "Fn::Join": [ ".", [ { "Fn::FindInMap": [ "IPAddress", "VPC", "PreFix" ] }, { "Fn::FindInMap": [ "IPAddress", "Nodes", "InFix" ] }, { "Fn::FindInMap": [ "IPAddress", "K8sWorker4", "SufFix" ] } ] ] }, "/24]\\n      gateway4: ", { "Fn::Join": [ ".", [ { "Fn::FindInMap": [ "IPAddress", "VPC", "PreFix" ] }, { "Fn::FindInMap": [ "IPAddress", "Nodes", "InFix" ] }, { "Fn::FindInMap": [ "IPAddress", "BigIP", "SufFix" ] } ] ] }, "\\n      nameservers:\\n        addresses: [", { "Fn::FindInMap": [ "IPAddress", "VPC", "PreFix" ] }, ".0.2]\\n  version: 2\\n\" > /etc/netplan/50-cloud-init.yaml\n",
      "sudo netplan apply\n",
 
      "Loop=\"Yes\"\n",
      "Loop_Period=\"1m\"\n",
      "User=admin\n",
-     "BigIPAddress=\"", { "Fn::Join": [ ".", [ { "Fn::FindInMap": [ "IPAddress", "VPC", "PreFix" ] }, { "Fn::FindInMap": [ "IPAddress", "K8sNode", "InFix" ] }, { "Fn::FindInMap": [ "IPAddress", "BigIP", "SufFix" ] } ] ] }, "\"\n",
+     "BigIPAddress=\"", { "Fn::Join": [ ".", [ { "Fn::FindInMap": [ "IPAddress", "VPC", "PreFix" ] }, { "Fn::FindInMap": [ "IPAddress", "Nodes", "InFix" ] }, { "Fn::FindInMap": [ "IPAddress", "BigIP", "SufFix" ] } ] ] }, "\"\n",
      "while ( [ \"$Loop\" == \"Yes\" ] ) ; do\n",
      " if ( runuser -u ubuntu -- ssh -o StrictHostKeyChecking=no $User@$BigIPAddress run util bash -c /config/UpGradeStatus.sh | egrep -o \"^([0-9]{14} Custom Configuration Finished \\.)$\" ) ; then\n",
      "  echo \"`date +%Y%m%d%H%M%S` Big-IP is Ready .\"\n",
@@ -2519,17 +2454,17 @@
      "chmod 600 /home/ubuntu/.ssh/authorized_keys\n",
      "timedatectl set-timezone \"", { "Ref": "TimeZone" }, "\"\n",
 
-     "IFName=`ip -4 -o address | grep \"", { "Fn::Join": [ ".", [ { "Fn::FindInMap": [ "IPAddress", "VPC", "PreFix" ] }, { "Fn::FindInMap": [ "IPAddress", "K8sNode", "InFix" ] }, { "Fn::FindInMap": [ "IPAddress", "K8sWorker5", "SufFix" ] } ] ] }, "\" | awk '{print $2}'`\n",
+     "IFName=`ip -4 -o address | grep \"", { "Fn::Join": [ ".", [ { "Fn::FindInMap": [ "IPAddress", "VPC", "PreFix" ] }, { "Fn::FindInMap": [ "IPAddress", "Nodes", "InFix" ] }, { "Fn::FindInMap": [ "IPAddress", "K8sWorker5", "SufFix" ] } ] ] }, "\" | awk '{print $2}'`\n",
      "echo \"`date +%Y%m%d%H%M%S` Interface Name : $IFName .\"\n",
      "sudo printf \"network: {config: disabled}\" >> /etc/cloud/cloud.cfg.d/subiquity-disable-cloudinit-networking.cfg\n",
      "sudo rm -frv /etc/netplan/*\n",
-     "sudo printf \"network:\\n  ethernets:\\n    $IFName:\\n      addresses: [", { "Fn::Join": [ ".", [ { "Fn::FindInMap": [ "IPAddress", "VPC", "PreFix" ] }, { "Fn::FindInMap": [ "IPAddress", "K8sNode", "InFix" ] }, { "Fn::FindInMap": [ "IPAddress", "K8sWorker5", "SufFix" ] } ] ] }, "/24]\\n      gateway4: ", { "Fn::Join": [ ".", [ { "Fn::FindInMap": [ "IPAddress", "VPC", "PreFix" ] }, { "Fn::FindInMap": [ "IPAddress", "K8sNode", "InFix" ] }, { "Fn::FindInMap": [ "IPAddress", "BigIP", "SufFix" ] } ] ] }, "\\n      nameservers:\\n        addresses: [", { "Fn::FindInMap": [ "IPAddress", "VPC", "PreFix" ] }, ".0.2]\\n  version: 2\\n\" > /etc/netplan/50-cloud-init.yaml\n",
+     "sudo printf \"network:\\n  ethernets:\\n    $IFName:\\n      addresses: [", { "Fn::Join": [ ".", [ { "Fn::FindInMap": [ "IPAddress", "VPC", "PreFix" ] }, { "Fn::FindInMap": [ "IPAddress", "Nodes", "InFix" ] }, { "Fn::FindInMap": [ "IPAddress", "K8sWorker5", "SufFix" ] } ] ] }, "/24]\\n      gateway4: ", { "Fn::Join": [ ".", [ { "Fn::FindInMap": [ "IPAddress", "VPC", "PreFix" ] }, { "Fn::FindInMap": [ "IPAddress", "Nodes", "InFix" ] }, { "Fn::FindInMap": [ "IPAddress", "BigIP", "SufFix" ] } ] ] }, "\\n      nameservers:\\n        addresses: [", { "Fn::FindInMap": [ "IPAddress", "VPC", "PreFix" ] }, ".0.2]\\n  version: 2\\n\" > /etc/netplan/50-cloud-init.yaml\n",
      "sudo netplan apply\n",
 
      "Loop=\"Yes\"\n",
      "Loop_Period=\"1m\"\n",
      "User=admin\n",
-     "BigIPAddress=\"", { "Fn::Join": [ ".", [ { "Fn::FindInMap": [ "IPAddress", "VPC", "PreFix" ] }, { "Fn::FindInMap": [ "IPAddress", "K8sNode", "InFix" ] }, { "Fn::FindInMap": [ "IPAddress", "BigIP", "SufFix" ] } ] ] }, "\"\n",
+     "BigIPAddress=\"", { "Fn::Join": [ ".", [ { "Fn::FindInMap": [ "IPAddress", "VPC", "PreFix" ] }, { "Fn::FindInMap": [ "IPAddress", "Nodes", "InFix" ] }, { "Fn::FindInMap": [ "IPAddress", "BigIP", "SufFix" ] } ] ] }, "\"\n",
      "while ( [ \"$Loop\" == \"Yes\" ] ) ; do\n",
      " if ( runuser -u ubuntu -- ssh -o StrictHostKeyChecking=no $User@$BigIPAddress run util bash -c /config/UpGradeStatus.sh | egrep -o \"^([0-9]{14} Custom Configuration Finished \\.)$\" ) ; then\n",
      "  echo \"`date +%Y%m%d%H%M%S` Big-IP is Ready .\"\n",
@@ -2614,17 +2549,17 @@
      "chmod 600 /home/ubuntu/.ssh/authorized_keys\n",
      "timedatectl set-timezone \"", { "Ref": "TimeZone" }, "\"\n",
 
-     "IFName=`ip -4 -o address | grep \"", { "Fn::Join": [ ".", [ { "Fn::FindInMap": [ "IPAddress", "VPC", "PreFix" ] }, { "Fn::FindInMap": [ "IPAddress", "K8sNode", "InFix" ] }, { "Fn::FindInMap": [ "IPAddress", "K8sWorker6", "SufFix" ] } ] ] }, "\" | awk '{print $2}'`\n",
+     "IFName=`ip -4 -o address | grep \"", { "Fn::Join": [ ".", [ { "Fn::FindInMap": [ "IPAddress", "VPC", "PreFix" ] }, { "Fn::FindInMap": [ "IPAddress", "Nodes", "InFix" ] }, { "Fn::FindInMap": [ "IPAddress", "K8sWorker6", "SufFix" ] } ] ] }, "\" | awk '{print $2}'`\n",
      "echo \"`date +%Y%m%d%H%M%S` Interface Name : $IFName .\"\n",
      "sudo printf \"network: {config: disabled}\" >> /etc/cloud/cloud.cfg.d/subiquity-disable-cloudinit-networking.cfg\n",
      "sudo rm -frv /etc/netplan/*\n",
-     "sudo printf \"network:\\n  ethernets:\\n    $IFName:\\n      addresses: [", { "Fn::Join": [ ".", [ { "Fn::FindInMap": [ "IPAddress", "VPC", "PreFix" ] }, { "Fn::FindInMap": [ "IPAddress", "K8sNode", "InFix" ] }, { "Fn::FindInMap": [ "IPAddress", "K8sWorker6", "SufFix" ] } ] ] }, "/24]\\n      gateway4: ", { "Fn::Join": [ ".", [ { "Fn::FindInMap": [ "IPAddress", "VPC", "PreFix" ] }, { "Fn::FindInMap": [ "IPAddress", "K8sNode", "InFix" ] }, { "Fn::FindInMap": [ "IPAddress", "BigIP", "SufFix" ] } ] ] }, "\\n      nameservers:\\n        addresses: [", { "Fn::FindInMap": [ "IPAddress", "VPC", "PreFix" ] }, ".0.2]\\n  version: 2\\n\" > /etc/netplan/50-cloud-init.yaml\n",
+     "sudo printf \"network:\\n  ethernets:\\n    $IFName:\\n      addresses: [", { "Fn::Join": [ ".", [ { "Fn::FindInMap": [ "IPAddress", "VPC", "PreFix" ] }, { "Fn::FindInMap": [ "IPAddress", "Nodes", "InFix" ] }, { "Fn::FindInMap": [ "IPAddress", "K8sWorker6", "SufFix" ] } ] ] }, "/24]\\n      gateway4: ", { "Fn::Join": [ ".", [ { "Fn::FindInMap": [ "IPAddress", "VPC", "PreFix" ] }, { "Fn::FindInMap": [ "IPAddress", "Nodes", "InFix" ] }, { "Fn::FindInMap": [ "IPAddress", "BigIP", "SufFix" ] } ] ] }, "\\n      nameservers:\\n        addresses: [", { "Fn::FindInMap": [ "IPAddress", "VPC", "PreFix" ] }, ".0.2]\\n  version: 2\\n\" > /etc/netplan/50-cloud-init.yaml\n",
      "sudo netplan apply\n",
 
      "Loop=\"Yes\"\n",
      "Loop_Period=\"1m\"\n",
      "User=admin\n",
-     "BigIPAddress=\"", { "Fn::Join": [ ".", [ { "Fn::FindInMap": [ "IPAddress", "VPC", "PreFix" ] }, { "Fn::FindInMap": [ "IPAddress", "K8sNode", "InFix" ] }, { "Fn::FindInMap": [ "IPAddress", "BigIP", "SufFix" ] } ] ] }, "\"\n",
+     "BigIPAddress=\"", { "Fn::Join": [ ".", [ { "Fn::FindInMap": [ "IPAddress", "VPC", "PreFix" ] }, { "Fn::FindInMap": [ "IPAddress", "Nodes", "InFix" ] }, { "Fn::FindInMap": [ "IPAddress", "BigIP", "SufFix" ] } ] ] }, "\"\n",
      "while ( [ \"$Loop\" == \"Yes\" ] ) ; do\n",
      " if ( runuser -u ubuntu -- ssh -o StrictHostKeyChecking=no $User@$BigIPAddress run util bash -c /config/UpGradeStatus.sh | egrep -o \"^([0-9]{14} Custom Configuration Finished \\.)$\" ) ; then\n",
      "  echo \"`date +%Y%m%d%H%M%S` Big-IP is Ready .\"\n",
@@ -2709,17 +2644,17 @@
      "chmod 600 /home/ubuntu/.ssh/authorized_keys\n",
      "timedatectl set-timezone \"", { "Ref": "TimeZone" }, "\"\n",
 
-     "IFName=`ip -4 -o address | grep \"", { "Fn::Join": [ ".", [ { "Fn::FindInMap": [ "IPAddress", "VPC", "PreFix" ] }, { "Fn::FindInMap": [ "IPAddress", "K8sNode", "InFix" ] }, { "Fn::FindInMap": [ "IPAddress", "K8sWorker7", "SufFix" ] } ] ] }, "\" | awk '{print $2}'`\n",
+     "IFName=`ip -4 -o address | grep \"", { "Fn::Join": [ ".", [ { "Fn::FindInMap": [ "IPAddress", "VPC", "PreFix" ] }, { "Fn::FindInMap": [ "IPAddress", "Nodes", "InFix" ] }, { "Fn::FindInMap": [ "IPAddress", "K8sWorker7", "SufFix" ] } ] ] }, "\" | awk '{print $2}'`\n",
      "echo \"`date +%Y%m%d%H%M%S` Interface Name : $IFName .\"\n",
      "sudo printf \"network: {config: disabled}\" >> /etc/cloud/cloud.cfg.d/subiquity-disable-cloudinit-networking.cfg\n",
      "sudo rm -frv /etc/netplan/*\n",
-     "sudo printf \"network:\\n  ethernets:\\n    $IFName:\\n      addresses: [", { "Fn::Join": [ ".", [ { "Fn::FindInMap": [ "IPAddress", "VPC", "PreFix" ] }, { "Fn::FindInMap": [ "IPAddress", "K8sNode", "InFix" ] }, { "Fn::FindInMap": [ "IPAddress", "K8sWorker7", "SufFix" ] } ] ] }, "/24]\\n      gateway4: ", { "Fn::Join": [ ".", [ { "Fn::FindInMap": [ "IPAddress", "VPC", "PreFix" ] }, { "Fn::FindInMap": [ "IPAddress", "K8sNode", "InFix" ] }, { "Fn::FindInMap": [ "IPAddress", "BigIP", "SufFix" ] } ] ] }, "\\n      nameservers:\\n        addresses: [", { "Fn::FindInMap": [ "IPAddress", "VPC", "PreFix" ] }, ".0.2]\\n  version: 2\\n\" > /etc/netplan/50-cloud-init.yaml\n",
+     "sudo printf \"network:\\n  ethernets:\\n    $IFName:\\n      addresses: [", { "Fn::Join": [ ".", [ { "Fn::FindInMap": [ "IPAddress", "VPC", "PreFix" ] }, { "Fn::FindInMap": [ "IPAddress", "Nodes", "InFix" ] }, { "Fn::FindInMap": [ "IPAddress", "K8sWorker7", "SufFix" ] } ] ] }, "/24]\\n      gateway4: ", { "Fn::Join": [ ".", [ { "Fn::FindInMap": [ "IPAddress", "VPC", "PreFix" ] }, { "Fn::FindInMap": [ "IPAddress", "Nodes", "InFix" ] }, { "Fn::FindInMap": [ "IPAddress", "BigIP", "SufFix" ] } ] ] }, "\\n      nameservers:\\n        addresses: [", { "Fn::FindInMap": [ "IPAddress", "VPC", "PreFix" ] }, ".0.2]\\n  version: 2\\n\" > /etc/netplan/50-cloud-init.yaml\n",
      "sudo netplan apply\n",
 
      "Loop=\"Yes\"\n",
      "Loop_Period=\"1m\"\n",
      "User=admin\n",
-     "BigIPAddress=\"", { "Fn::Join": [ ".", [ { "Fn::FindInMap": [ "IPAddress", "VPC", "PreFix" ] }, { "Fn::FindInMap": [ "IPAddress", "K8sNode", "InFix" ] }, { "Fn::FindInMap": [ "IPAddress", "BigIP", "SufFix" ] } ] ] }, "\"\n",
+     "BigIPAddress=\"", { "Fn::Join": [ ".", [ { "Fn::FindInMap": [ "IPAddress", "VPC", "PreFix" ] }, { "Fn::FindInMap": [ "IPAddress", "Nodes", "InFix" ] }, { "Fn::FindInMap": [ "IPAddress", "BigIP", "SufFix" ] } ] ] }, "\"\n",
      "while ( [ \"$Loop\" == \"Yes\" ] ) ; do\n",
      " if ( runuser -u ubuntu -- ssh -o StrictHostKeyChecking=no $User@$BigIPAddress run util bash -c /config/UpGradeStatus.sh | egrep -o \"^([0-9]{14} Custom Configuration Finished \\.)$\" ) ; then\n",
      "  echo \"`date +%Y%m%d%H%M%S` Big-IP is Ready .\"\n",
@@ -2804,17 +2739,17 @@
      "chmod 600 /home/ubuntu/.ssh/authorized_keys\n",
      "timedatectl set-timezone \"", { "Ref": "TimeZone" }, "\"\n",
 
-     "IFName=`ip -4 -o address | grep \"", { "Fn::Join": [ ".", [ { "Fn::FindInMap": [ "IPAddress", "VPC", "PreFix" ] }, { "Fn::FindInMap": [ "IPAddress", "K8sNode", "InFix" ] }, { "Fn::FindInMap": [ "IPAddress", "K8sWorker8", "SufFix" ] } ] ] }, "\" | awk '{print $2}'`\n",
+     "IFName=`ip -4 -o address | grep \"", { "Fn::Join": [ ".", [ { "Fn::FindInMap": [ "IPAddress", "VPC", "PreFix" ] }, { "Fn::FindInMap": [ "IPAddress", "Nodes", "InFix" ] }, { "Fn::FindInMap": [ "IPAddress", "K8sWorker8", "SufFix" ] } ] ] }, "\" | awk '{print $2}'`\n",
      "echo \"`date +%Y%m%d%H%M%S` Interface Name : $IFName .\"\n",
      "sudo printf \"network: {config: disabled}\" >> /etc/cloud/cloud.cfg.d/subiquity-disable-cloudinit-networking.cfg\n",
      "sudo rm -frv /etc/netplan/*\n",
-     "sudo printf \"network:\\n  ethernets:\\n    $IFName:\\n      addresses: [", { "Fn::Join": [ ".", [ { "Fn::FindInMap": [ "IPAddress", "VPC", "PreFix" ] }, { "Fn::FindInMap": [ "IPAddress", "K8sNode", "InFix" ] }, { "Fn::FindInMap": [ "IPAddress", "K8sWorker8", "SufFix" ] } ] ] }, "/24]\\n      gateway4: ", { "Fn::Join": [ ".", [ { "Fn::FindInMap": [ "IPAddress", "VPC", "PreFix" ] }, { "Fn::FindInMap": [ "IPAddress", "K8sNode", "InFix" ] }, { "Fn::FindInMap": [ "IPAddress", "BigIP", "SufFix" ] } ] ] }, "\\n      nameservers:\\n        addresses: [", { "Fn::FindInMap": [ "IPAddress", "VPC", "PreFix" ] }, ".0.2]\\n  version: 2\\n\" > /etc/netplan/50-cloud-init.yaml\n",
+     "sudo printf \"network:\\n  ethernets:\\n    $IFName:\\n      addresses: [", { "Fn::Join": [ ".", [ { "Fn::FindInMap": [ "IPAddress", "VPC", "PreFix" ] }, { "Fn::FindInMap": [ "IPAddress", "Nodes", "InFix" ] }, { "Fn::FindInMap": [ "IPAddress", "K8sWorker8", "SufFix" ] } ] ] }, "/24]\\n      gateway4: ", { "Fn::Join": [ ".", [ { "Fn::FindInMap": [ "IPAddress", "VPC", "PreFix" ] }, { "Fn::FindInMap": [ "IPAddress", "Nodes", "InFix" ] }, { "Fn::FindInMap": [ "IPAddress", "BigIP", "SufFix" ] } ] ] }, "\\n      nameservers:\\n        addresses: [", { "Fn::FindInMap": [ "IPAddress", "VPC", "PreFix" ] }, ".0.2]\\n  version: 2\\n\" > /etc/netplan/50-cloud-init.yaml\n",
      "sudo netplan apply\n",
 
      "Loop=\"Yes\"\n",
      "Loop_Period=\"1m\"\n",
      "User=admin\n",
-     "BigIPAddress=\"", { "Fn::Join": [ ".", [ { "Fn::FindInMap": [ "IPAddress", "VPC", "PreFix" ] }, { "Fn::FindInMap": [ "IPAddress", "K8sNode", "InFix" ] }, { "Fn::FindInMap": [ "IPAddress", "BigIP", "SufFix" ] } ] ] }, "\"\n",
+     "BigIPAddress=\"", { "Fn::Join": [ ".", [ { "Fn::FindInMap": [ "IPAddress", "VPC", "PreFix" ] }, { "Fn::FindInMap": [ "IPAddress", "Nodes", "InFix" ] }, { "Fn::FindInMap": [ "IPAddress", "BigIP", "SufFix" ] } ] ] }, "\"\n",
      "while ( [ \"$Loop\" == \"Yes\" ] ) ; do\n",
      " if ( runuser -u ubuntu -- ssh -o StrictHostKeyChecking=no $User@$BigIPAddress run util bash -c /config/UpGradeStatus.sh | egrep -o \"^([0-9]{14} Custom Configuration Finished \\.)$\" ) ; then\n",
      "  echo \"`date +%Y%m%d%H%M%S` Big-IP is Ready .\"\n",
@@ -2899,17 +2834,17 @@
      "chmod 600 /home/ubuntu/.ssh/authorized_keys\n",
      "timedatectl set-timezone \"", { "Ref": "TimeZone" }, "\"\n",
 
-     "IFName=`ip -4 -o address | grep \"", { "Fn::Join": [ ".", [ { "Fn::FindInMap": [ "IPAddress", "VPC", "PreFix" ] }, { "Fn::FindInMap": [ "IPAddress", "K8sNode", "InFix" ] }, { "Fn::FindInMap": [ "IPAddress", "K8sWorker9", "SufFix" ] } ] ] }, "\" | awk '{print $2}'`\n",
+     "IFName=`ip -4 -o address | grep \"", { "Fn::Join": [ ".", [ { "Fn::FindInMap": [ "IPAddress", "VPC", "PreFix" ] }, { "Fn::FindInMap": [ "IPAddress", "Nodes", "InFix" ] }, { "Fn::FindInMap": [ "IPAddress", "K8sWorker9", "SufFix" ] } ] ] }, "\" | awk '{print $2}'`\n",
      "echo \"`date +%Y%m%d%H%M%S` Interface Name : $IFName .\"\n",
      "sudo printf \"network: {config: disabled}\" >> /etc/cloud/cloud.cfg.d/subiquity-disable-cloudinit-networking.cfg\n",
      "sudo rm -frv /etc/netplan/*\n",
-     "sudo printf \"network:\\n  ethernets:\\n    $IFName:\\n      addresses: [", { "Fn::Join": [ ".", [ { "Fn::FindInMap": [ "IPAddress", "VPC", "PreFix" ] }, { "Fn::FindInMap": [ "IPAddress", "K8sNode", "InFix" ] }, { "Fn::FindInMap": [ "IPAddress", "K8sWorker9", "SufFix" ] } ] ] }, "/24]\\n      gateway4: ", { "Fn::Join": [ ".", [ { "Fn::FindInMap": [ "IPAddress", "VPC", "PreFix" ] }, { "Fn::FindInMap": [ "IPAddress", "K8sNode", "InFix" ] }, { "Fn::FindInMap": [ "IPAddress", "BigIP", "SufFix" ] } ] ] }, "\\n      nameservers:\\n        addresses: [", { "Fn::FindInMap": [ "IPAddress", "VPC", "PreFix" ] }, ".0.2]\\n  version: 2\\n\" > /etc/netplan/50-cloud-init.yaml\n",
+     "sudo printf \"network:\\n  ethernets:\\n    $IFName:\\n      addresses: [", { "Fn::Join": [ ".", [ { "Fn::FindInMap": [ "IPAddress", "VPC", "PreFix" ] }, { "Fn::FindInMap": [ "IPAddress", "Nodes", "InFix" ] }, { "Fn::FindInMap": [ "IPAddress", "K8sWorker9", "SufFix" ] } ] ] }, "/24]\\n      gateway4: ", { "Fn::Join": [ ".", [ { "Fn::FindInMap": [ "IPAddress", "VPC", "PreFix" ] }, { "Fn::FindInMap": [ "IPAddress", "Nodes", "InFix" ] }, { "Fn::FindInMap": [ "IPAddress", "BigIP", "SufFix" ] } ] ] }, "\\n      nameservers:\\n        addresses: [", { "Fn::FindInMap": [ "IPAddress", "VPC", "PreFix" ] }, ".0.2]\\n  version: 2\\n\" > /etc/netplan/50-cloud-init.yaml\n",
      "sudo netplan apply\n",
 
      "Loop=\"Yes\"\n",
      "Loop_Period=\"1m\"\n",
      "User=admin\n",
-     "BigIPAddress=\"", { "Fn::Join": [ ".", [ { "Fn::FindInMap": [ "IPAddress", "VPC", "PreFix" ] }, { "Fn::FindInMap": [ "IPAddress", "K8sNode", "InFix" ] }, { "Fn::FindInMap": [ "IPAddress", "BigIP", "SufFix" ] } ] ] }, "\"\n",
+     "BigIPAddress=\"", { "Fn::Join": [ ".", [ { "Fn::FindInMap": [ "IPAddress", "VPC", "PreFix" ] }, { "Fn::FindInMap": [ "IPAddress", "Nodes", "InFix" ] }, { "Fn::FindInMap": [ "IPAddress", "BigIP", "SufFix" ] } ] ] }, "\"\n",
      "while ( [ \"$Loop\" == \"Yes\" ] ) ; do\n",
      " if ( runuser -u ubuntu -- ssh -o StrictHostKeyChecking=no $User@$BigIPAddress run util bash -c /config/UpGradeStatus.sh | egrep -o \"^([0-9]{14} Custom Configuration Finished \\.)$\" ) ; then\n",
      "  echo \"`date +%Y%m%d%H%M%S` Big-IP is Ready .\"\n",
