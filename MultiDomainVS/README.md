@@ -1,7 +1,7 @@
 
 
 
-SSL Dum Dum
+SSL Trace
 
 Jul 14 20:07:33 ip-10-1-1-241.ap-southeast-1.compute.internal info tmm3[18529]: Rule /Common/DetectSNI <CLIENTSSL_CLIENTHELLO>: Server Name Indication : hackazon.aadc.link
 Jul 14 20:07:33 ip-10-1-1-241.ap-southeast-1.compute.internal info tmm3[18529]: Rule /Common/DetectSNI <CLIENTSSL_CLIENTHELLO>: Server Name Indication : hackazon.aadc.link
@@ -30,7 +30,6 @@ Jul 14 20:08:25 ip-10-1-1-241.ap-southeast-1.compute.internal warning httpd[1244
 
 
 
-
 With Cert/Key/Bundle Info:
 
 Jul 14 22:59:16 ip-10-1-1-241.ap-southeast-1.compute.internal info -c[18529]: Rule /Common/DetectSNI <CLIENTSSL_CLIENTHELLO>: Server Name Indication : hackazon.aadc.link
@@ -49,10 +48,6 @@ Jul 14 22:59:19 ip-10-1-1-241.ap-southeast-1.compute.internal info tmm1[18529]: 
 
 
 
-
-
-
-
 No Cert/Key/Bundle
 
 Jul 14 22:56:08 ip-10-1-1-241.ap-southeast-1.compute.internal warning -c[18529]: 01260009:4: 10.1.20.17:80 -> 10.1.20.241:21280: Connection error: ssl_null_parse:3702: alert(10) invalid record type
@@ -60,15 +55,18 @@ Jul 14 22:56:08 ip-10-1-1-241.ap-southeast-1.compute.internal warning -c[18529]:
 
 
 
+Reference:
+
+https://support.f5.com/csp/article/K13452
 
 
 
+Sample UCS:
 
+s3://aws-f5-singapore-hc-demo-bucket-files/MultiDomainVS/202107142130_MultiDomainVS_SSLOffLoad.ucs
+s3://aws-f5-singapore-hc-demo-bucket-files/MultiDomainVS/202107142207_MultiDomainVS_ServerSSL.ucs
+s3://aws-f5-singapore-hc-demo-bucket-files/MultiDomainVS/202107142236_MultiDomainVS_ServerSSL.ucs
 
-
-
-
-
-
+Use Big-IP Lab CloudFormation Template for the above UCSs.
 
 
