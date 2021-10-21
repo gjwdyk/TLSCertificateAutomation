@@ -123,7 +123,7 @@ Sample options/parameters :
 certonly --manual --preferred-challenges=dns --email john@doe.net --agree-tos -d *.domain.xyz
 ```
 
-Note that `\*.domain.xyz` means for example:
+Note that `*.domain.xyz` means for example:
 abc.domain.xyz is valid, but it does NOT covers for example abc.def.domain.xyz
 the wild card covers only one layer under the domain.xyz, not more than that.
 
