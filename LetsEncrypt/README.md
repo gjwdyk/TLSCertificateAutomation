@@ -127,10 +127,11 @@ Note that `*.domain.xyz` means for example:
 `abc.domain.xyz` is valid, but it does ***NOT*** covers for example `abc.def.domain.xyz` .
 the wild card (\*) covers only one layer under the `domain.xyz`, not more than that.
 
-
-
+```
 sudo certbot certonly --manual --agree-tos --email 'john.hc.doe@web.de' -d *.aadc.link
+```
 
+```
 ubuntu@ip-10-1-1-11:~$ sudo certbot certonly --manual --agree-tos --email 'john.hc.doe@web.de' -d *.aadc.link
 Saving debug log to /var/log/letsencrypt/letsencrypt.log
 
@@ -179,9 +180,9 @@ If you like Certbot, please consider supporting our work by:
  * Donating to EFF:                    https://eff.org/donate-le
 - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ubuntu@ip-10-1-1-11:~$
+```
 
-
-
+```
 ubuntu@ip-10-1-1-11:~$ openssl x509 -text -in /etc/letsencrypt/live/aadc.link/cert.pem
 Certificate:
     Data:
@@ -312,7 +313,7 @@ C8/ZfOt2QjEle7pVlMyY6pf/4c+Os0PXUC791zEIG0xbwF/jBhz0yoG7WCkXV/lT
 Ya8qn1XTv+iG/g0zElfl
 -----END CERTIFICATE-----
 ubuntu@ip-10-1-1-11:~$
-
+```
 
 
 --manual-auth-hook manualauthhook.sh
