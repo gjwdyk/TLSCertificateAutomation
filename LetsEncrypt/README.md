@@ -333,8 +333,10 @@ Parameter for running an authentication script is `--manual-auth-hook` followed 
 ```
 
 The example file `manualauthhook.sh` below does ***NOT*** do any authentication at all, which is something you have to add, for example using **AWS CLI** to add a **TXT Record** to **Route 53** as required during authentication (i.e. `--preferred-challenges=dns`).
-However, the script/your authentication script certainly need input information of the challenge value(s) which the script needs to work on.
+However, the authentication script/your authentication script certainly need input information of the challenge value(s) which the script needs to work on.
 The example file `manualauthhook.sh` below only shows those input information provided by CertBot, which is provided as Environment Variables.
+
+An important note on the authentication script/your authentication script, is that the DNS TXT Record needs time to propagate, and therefore some wait time (example with `sleep` command) may be required before you allow the authentication script to end its execution.
 
 ```
 #!/bin/bash -ex
@@ -350,7 +352,7 @@ You can do this with `--manual-cleanup-hook` parameter followed with the clean u
 --manual-cleanup-hook manualcleanuphook.sh
 ```
 
-Similar to the authenticate script the example `manualcleanuphook.sh` script below also only showing the Environment Variables and nothing else.
+Similar to the authenticate script, the example `manualcleanuphook.sh` script below also only shows the Environment Variables and nothing else.
 You need to come up with the actual removal script yourself.
 
 ```
@@ -366,7 +368,7 @@ Complete example command for auto renewal can be like below:
 sudo certbot renew --dry-run --manual-auth-hook /home/ubuntu/manualauthhook.sh --manual-cleanup-hook /home/ubuntu/manualcleanuphook.sh
 ```
 
-The example 
+The example command run with the example `manualauthhook.sh` and `manualcleanuphook.sh` emits below output:
 
 ```
 ubuntu@ip-10-1-1-11:~$ sudo certbot renew --dry-run --manual-auth-hook /home/ubuntu/manualauthhook.sh --manual-cleanup-hook /home/ubuntu/manualcleanuphook.sh
@@ -523,8 +525,9 @@ All simulated renewals failed. The following certificates could not be renewed:
 - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 1 renew failure(s), 0 parse failure(s)
 Ask for help or search for solutions at https://community.letsencrypt.org. See the logfile /var/log/letsencrypt/letsencrypt.log or re-run Certbot with -v for more details.
-ubuntu@ip-10-1-1-11:~$
 ```
+
+Note that since the example above do ***NOT*** actually do any authentication, the example output dump above stated some errors, which is expected.
 
 
 
@@ -532,22 +535,28 @@ ubuntu@ip-10-1-1-11:~$
 
 # AWS CLI
 
+AWS CLI is not installed by default on a Standard Ubuntu AMI image. Therefore it needs to be installed.
+The AWS CLI package unfortunately must be downloaded with `curl` in a **ZIP** format.
+
+You may want to check the latest AMI CLI version (and it's proper download location) before executing the below commands:
+
 ```
 sudo apt install unzip
-
 curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
 unzip awscliv2.zip
 sudo ./aws/install
 ```
 
+Check the installed AMI CLI version:
+
 ```
 ubuntu@ip-10-1-1-11:~$ aws --version
 aws-cli/2.2.43 Python/3.8.8 Linux/5.4.0-1049-aws exe/x86_64.ubuntu.20 prompt/off
-ubuntu@ip-10-1-1-11:~$
 ```
 
+The DNS Resource Record needs to be prepared in a file, for example `file://sample.json` :
 
-file://sample.json
+```
 {
  "Comment": "CREATE/DELETE/UPSERT a ResourceRecord",
  "Changes": [{
@@ -560,7 +569,11 @@ file://sample.json
   }
  }]
 }
+```
 
+And refer to the prepared DNS ResourceRecord file (i.e. `file://sample.json`) when issuing the AWS CLI command to AWS to create the DNS ResourceRecord:
+
+```
 aws route53 change-resource-record-sets --hosted-zone-id ZXXXXXXXXXX --change-batch file://sample.json
 {
  "ChangeInfo": {
@@ -570,7 +583,11 @@ aws route53 change-resource-record-sets --hosted-zone-id ZXXXXXXXXXX --change-ba
   "Id": "/change/C3QYC83OA0KX5K"
  }
 }
+```
 
+Take note (parse and store) the output of the command, especially the `Id` section, which you will need to refer to when querying AWS on the status of your request to create the DNS ResourceRecord.
+
+```
 aws route53  get-change --id /change/C3QYC83OA0KX5K
 {
  "ChangeInfo": {
@@ -580,7 +597,11 @@ aws route53  get-change --id /change/C3QYC83OA0KX5K
   "Id": "/change/C3QYC83OA0KX5K"
  }
 }
+```
 
+Do this until the `Status` field's value is `INSYNC` :
+
+```
 aws route53  get-change --id /change/C3QYC83OA0KX5K
 {
  "ChangeInfo": {
@@ -590,13 +611,13 @@ aws route53  get-change --id /change/C3QYC83OA0KX5K
   "Id": "/change/C3QYC83OA0KX5K"
  }
 }
+```
 
+Below are just unpolished text dump.
 
+Policy/Role to assign to the EC2 on which the AWS CLI is installed; and this EC2 will issue the commands to AWS API to create DNS ResourceRecord and clean up.
 
-
-
-
-
+```
 {
  "Version": "2012-10-17",
  "Statement": [
@@ -673,12 +694,11 @@ aws route53  get-change --id /change/C3QYC83OA0KX5K
   }
  ]
 }
+```
 
+Other sample Policy/Role for S3 (example to store a copy of the obtained SSL/TSL Certificate):
 
-
-
-
-
+```
 {
  "Version": "2012-10-17",
  "Statement": [
@@ -698,22 +718,35 @@ aws route53  get-change --id /change/C3QYC83OA0KX5K
   }
  ]
 }
+```
 
 
 
+***
+
+Below may not be needed.
+
+API Call to a service in the Internet to obtain Random Word(s).
+Example: to construct a FQDN you may want a (random) word to be used as a sub-domain.
+
+```
 ubuntu@ip-10-1-1-11:~$ curl --retry 333 -s http://random-word-api.herokuapp.com/word?number=1
 ["ferredoxin"]ubuntu@ip-10-1-1-11:~$
+```
 
+```
 $ echo 'Here is a string, and Here is another string.' | grep -oP '(?<=Here).*(?=string)' # Greedy match
  is a string, and Here is another 
 $ echo 'Here is a string, and Here is another string.' | grep -oP '(?<=Here).*?(?=string)' # Non-greedy match (Notice the '?' after '*' in .*)
  is a 
  is another 
+```
 
 grep -oP '(?<=\[\").*?(?=\"\])'
 
 curl --retry 333 -s http://random-word-api.herokuapp.com/word?number=1 | grep -oP '(?<=\[\").*?(?=\"\])'
 
+```
 ubuntu@ip-10-1-1-11:~$ curl --retry 333 -s http://random-word-api.herokuapp.com/word?number=1 | grep -oP '(?<=\[\").*?(?=\"\])'
 proa
 ubuntu@ip-10-1-1-11:~$ curl --retry 333 -s http://random-word-api.herokuapp.com/word?number=1 | grep -oP '(?<=\[\").*?(?=\"\])'
@@ -721,9 +754,13 @@ porkiness
 ubuntu@ip-10-1-1-11:~$ curl --retry 333 -s http://random-word-api.herokuapp.com/word?number=1 | grep -oP '(?<=\[\").*?(?=\"\])'
 oxalate
 ubuntu@ip-10-1-1-11:~$
+```
 
+```
 TestVariable=`curl --retry 333 -s http://random-word-api.herokuapp.com/word?number=1 | grep -oP '(?<=\[\").*?(?=\"\])'` ; echo "TestVariable's value is : $TestVariable"
+```
 
+```
 ubuntu@ip-10-1-1-11:~$ TestVariable=`curl --retry 333 -s http://random-word-api.herokuapp.com/word?number=1 | grep -oP '(?<=\[\").*?(?=\"\])'` ; echo "TestVariable's value is : $TestVariable"
 TestVariable's value is : gizzard
 ubuntu@ip-10-1-1-11:~$ TestVariable=`curl --retry 333 -s http://random-word-api.herokuapp.com/word?number=1 | grep -oP '(?<=\[\").*?(?=\"\])'` ; echo "TestVariable's value is : $TestVariable"
@@ -731,7 +768,7 @@ TestVariable's value is : barrage
 ubuntu@ip-10-1-1-11:~$ TestVariable=`curl --retry 333 -s http://random-word-api.herokuapp.com/word?number=1 | grep -oP '(?<=\[\").*?(?=\"\])'` ; echo "TestVariable's value is : $TestVariable"
 TestVariable's value is : deadheaded
 ubuntu@ip-10-1-1-11:~$
-
+```
 
 
 
