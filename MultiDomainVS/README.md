@@ -73,6 +73,6 @@ Sample UCS:
 - [ ] s3://aws-f5-singapore-hc-demo-bucket-files/MultiDomainVS/202107142207_MultiDomainVS_ServerSSL.ucs
 - [ ] s3://aws-f5-singapore-hc-demo-bucket-files/MultiDomainVS/202107142236_MultiDomainVS_ServerSSL.ucs
 
-Use Big-IP Lab CloudFormation Template for the above UCSs.
+Use [Big-IP Lab CloudFormation Template](https://github.com/gjwdyk/BigIP-Lab) for the above UCSs.
 
 
