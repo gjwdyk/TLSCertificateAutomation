@@ -131,6 +131,8 @@ the wild card (\*) covers only one layer under the `domain.xyz`, not more than t
 sudo certbot certonly --manual --agree-tos --email 'john.hc.doe@web.de' -d *.aadc.link
 ```
 
+
+
 ```
 ubuntu@ip-10-1-1-11:~$ sudo certbot certonly --manual --agree-tos --email 'john.hc.doe@web.de' -d *.aadc.link
 Saving debug log to /var/log/letsencrypt/letsencrypt.log
@@ -142,7 +144,7 @@ partner of the Let's Encrypt project and the non-profit organization that
 develops Certbot? We'd like to send you email about our work encrypting the web,
 EFF news, campaigns, and ways to support digital freedom.
 - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-(Y)es/(N)o: Y   <<<<<<<<< There is a required key-press >>>>>>>>>
+(Y)es/(N)o: Y   `<<<<<<<<< There is a required key-press >>>>>>>>>`
 Account registered.
 Requesting a certificate for *.aadc.link
 
@@ -179,7 +181,6 @@ If you like Certbot, please consider supporting our work by:
  * Donating to ISRG / Let's Encrypt:   https://letsencrypt.org/donate
  * Donating to EFF:                    https://eff.org/donate-le
 - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-ubuntu@ip-10-1-1-11:~$
 ```
 
 ```
@@ -312,7 +313,6 @@ ejBr66+YaTQo3yOExWNZ6AcxgEZ0DpLDk3JPNn7nfkeq5B2K/+zX4233N7pu8tTc
 C8/ZfOt2QjEle7pVlMyY6pf/4c+Os0PXUC791zEIG0xbwF/jBhz0yoG7WCkXV/lT
 Ya8qn1XTv+iG/g0zElfl
 -----END CERTIFICATE-----
-ubuntu@ip-10-1-1-11:~$
 ```
 
 
