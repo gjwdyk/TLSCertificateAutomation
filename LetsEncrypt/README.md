@@ -326,11 +326,15 @@ Ya8qn1XTv+iG/g0zElfl
 
 ## Automating the Renewal
 
-
+Parameter for running an authentication script is `--manual-auth-hook` followed by the script filename. Example:
 
 ```
 --manual-auth-hook manualauthhook.sh
 ```
+
+The example file `manualauthhook.sh` below does ***NOT*** do any authentication at all, which is something you have to add, for example using AWS CLI to add an A Record to Route 53 as required during authentication (i.e. `--preferred-challenges=dns`).
+However, the script/your authentication script certainly need input information of the challenge value(s) which the script needs to work on.
+The example file `manualauthhook.sh` below only shows those input information provided by CertBot, which is provided as Environment Variables.
 
 ```
 #!/bin/bash -ex
@@ -338,6 +342,8 @@ Ya8qn1XTv+iG/g0zElfl
 echo "_acme-challenge.$CERTBOT_DOMAIN TXT $CERTBOT_VALIDATION"
 env
 ```
+
+
 
 ```
 --manual-cleanup-hook manualcleanuphook.sh
@@ -350,9 +356,11 @@ echo "_acme-challenge.$CERTBOT_DOMAIN TXT $CERTBOT_VALIDATION"
 env
 ```
 
-
+```
 sudo certbot renew --dry-run --manual-auth-hook /home/ubuntu/manualauthhook.sh --manual-cleanup-hook /home/ubuntu/manualcleanuphook.sh
+```
 
+```
 ubuntu@ip-10-1-1-11:~$ sudo certbot renew --dry-run --manual-auth-hook /home/ubuntu/manualauthhook.sh --manual-cleanup-hook /home/ubuntu/manualcleanuphook.sh
 Saving debug log to /var/log/letsencrypt/letsencrypt.log
 
@@ -508,21 +516,27 @@ All simulated renewals failed. The following certificates could not be renewed:
 1 renew failure(s), 0 parse failure(s)
 Ask for help or search for solutions at https://community.letsencrypt.org. See the logfile /var/log/letsencrypt/letsencrypt.log or re-run Certbot with -v for more details.
 ubuntu@ip-10-1-1-11:~$
+```
 
 
 
+***
+
+# AWS CLI
+
+```
 sudo apt install unzip
 
 curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
 unzip awscliv2.zip
 sudo ./aws/install
+```
 
-
-
+```
 ubuntu@ip-10-1-1-11:~$ aws --version
 aws-cli/2.2.43 Python/3.8.8 Linux/5.4.0-1049-aws exe/x86_64.ubuntu.20 prompt/off
 ubuntu@ip-10-1-1-11:~$
-
+```
 
 
 file://sample.json
