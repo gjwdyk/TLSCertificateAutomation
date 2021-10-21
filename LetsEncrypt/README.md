@@ -22,7 +22,7 @@ VERSION_CODENAME=focal
 UBUNTU_CODENAME=focal
 ```
 
-Check whether Python exists:
+Check whether Python exists, and which version:
 
 ```
 ubuntu@ip-10-1-1-11:~$ python3 --version
@@ -123,7 +123,7 @@ Sample options/parameters :
 certonly --manual --preferred-challenges=dns --email john@doe.net --agree-tos -d *.domain.xyz
 ```
 
-Note that \*.domain.xyz means for example:
+Note that `\*.domain.xyz` means for example:
 abc.domain.xyz is valid, but it does NOT covers for example abc.def.domain.xyz
 the wild card covers only one layer under the domain.xyz, not more than that.
 
