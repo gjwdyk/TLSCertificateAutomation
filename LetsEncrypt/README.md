@@ -117,6 +117,10 @@ More detailed help:
 - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ```
 
+
+
+## Create/Obtain SSL/TLS Certificate
+
 Sample options/parameters :
 
 ```
@@ -131,7 +135,8 @@ the wild card (\*) covers only one layer under the `domain.xyz`, not more than t
 sudo certbot certonly --manual --agree-tos --email 'john.hc.doe@web.de' -d *.aadc.link
 ```
 
-
+Note that you are required to provide keyboard pressure at location marked with `<<<<<<<<< There is a required key-press >>>>>>>>>` in the CLI text dump below.
+The required keyboard pressure means you need to find another way to automate (incorporate the command into a script).
 
 ```
 ubuntu@ip-10-1-1-11:~$ sudo certbot certonly --manual --agree-tos --email 'john.hc.doe@web.de' -d *.aadc.link
@@ -144,7 +149,7 @@ partner of the Let's Encrypt project and the non-profit organization that
 develops Certbot? We'd like to send you email about our work encrypting the web,
 EFF news, campaigns, and ways to support digital freedom.
 - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-(Y)es/(N)o: Y   `<<<<<<<<< There is a required key-press >>>>>>>>>`
+(Y)es/(N)o: Y   <<<<<<<<< There is a required key-press >>>>>>>>>
 Account registered.
 Requesting a certificate for *.aadc.link
 
@@ -182,6 +187,8 @@ If you like Certbot, please consider supporting our work by:
  * Donating to EFF:                    https://eff.org/donate-le
 - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ```
+
+Here are some information of the obtained SSL/TLS Certificate (using `openssl`):
 
 ```
 ubuntu@ip-10-1-1-11:~$ openssl x509 -text -in /etc/letsencrypt/live/aadc.link/cert.pem
@@ -316,22 +323,32 @@ Ya8qn1XTv+iG/g0zElfl
 ```
 
 
+
+## Automating the Renewal
+
+
+
+```
 --manual-auth-hook manualauthhook.sh
+```
 
+```
 #!/bin/bash -ex
 
 echo "_acme-challenge.$CERTBOT_DOMAIN TXT $CERTBOT_VALIDATION"
 env
+```
 
-
-
+```
 --manual-cleanup-hook manualcleanuphook.sh
+```
 
+```
 #!/bin/bash -ex
 
 echo "_acme-challenge.$CERTBOT_DOMAIN TXT $CERTBOT_VALIDATION"
 env
-
+```
 
 
 sudo certbot renew --dry-run --manual-auth-hook /home/ubuntu/manualauthhook.sh --manual-cleanup-hook /home/ubuntu/manualcleanuphook.sh
