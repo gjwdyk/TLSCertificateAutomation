@@ -332,7 +332,7 @@ Parameter for running an authentication script is `--manual-auth-hook` followed 
 --manual-auth-hook manualauthhook.sh
 ```
 
-The example file `manualauthhook.sh` below does ***NOT*** do any authentication at all, which is something you have to add, for example using AWS CLI to add an A Record to Route 53 as required during authentication (i.e. `--preferred-challenges=dns`).
+The example file `manualauthhook.sh` below does ***NOT*** do any authentication at all, which is something you have to add, for example using **AWS CLI** to add a **TXT Record** to **Route 53** as required during authentication (i.e. `--preferred-challenges=dns`).
 However, the script/your authentication script certainly need input information of the challenge value(s) which the script needs to work on.
 The example file `manualauthhook.sh` below only shows those input information provided by CertBot, which is provided as Environment Variables.
 
@@ -343,11 +343,15 @@ echo "_acme-challenge.$CERTBOT_DOMAIN TXT $CERTBOT_VALIDATION"
 env
 ```
 
-
+After the CertBot finishes authenticate the Domain Name, you want to clean up the autentication information (i.e. removing the **TXT Record**).
+You can do this with `--manual-cleanup-hook` parameter followed with the clean up script filename (example: `manualcleanuphook.sh`).
 
 ```
 --manual-cleanup-hook manualcleanuphook.sh
 ```
+
+Similar to the authenticate script the example `manualcleanuphook.sh` script below also only showing the Environment Variables and nothing else.
+You need to come up with the actual removal script yourself.
 
 ```
 #!/bin/bash -ex
@@ -356,9 +360,13 @@ echo "_acme-challenge.$CERTBOT_DOMAIN TXT $CERTBOT_VALIDATION"
 env
 ```
 
+Complete example command for auto renewal can be like below:
+
 ```
 sudo certbot renew --dry-run --manual-auth-hook /home/ubuntu/manualauthhook.sh --manual-cleanup-hook /home/ubuntu/manualcleanuphook.sh
 ```
+
+The example 
 
 ```
 ubuntu@ip-10-1-1-11:~$ sudo certbot renew --dry-run --manual-auth-hook /home/ubuntu/manualauthhook.sh --manual-cleanup-hook /home/ubuntu/manualcleanuphook.sh
