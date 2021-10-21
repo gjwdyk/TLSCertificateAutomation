@@ -734,6 +734,9 @@ ubuntu@ip-10-1-1-11:~$ curl --retry 333 -s http://random-word-api.herokuapp.com/
 ["ferredoxin"]ubuntu@ip-10-1-1-11:~$
 ```
 
+Result Word comes back with a certain format.
+Needs to parse the result word. Example:
+
 ```
 $ echo 'Here is a string, and Here is another string.' | grep -oP '(?<=Here).*(?=string)' # Greedy match
  is a string, and Here is another 
@@ -742,9 +745,19 @@ $ echo 'Here is a string, and Here is another string.' | grep -oP '(?<=Here).*?(
  is another 
 ```
 
-grep -oP '(?<=\[\").*?(?=\"\])'
+For our example, a more proper syntax:
 
+```
+grep -oP '(?<=\[\").*?(?=\"\])'
+```
+
+In complete:
+
+```
 curl --retry 333 -s http://random-word-api.herokuapp.com/word?number=1 | grep -oP '(?<=\[\").*?(?=\"\])'
+```
+
+Test as single command:
 
 ```
 ubuntu@ip-10-1-1-11:~$ curl --retry 333 -s http://random-word-api.herokuapp.com/word?number=1 | grep -oP '(?<=\[\").*?(?=\"\])'
@@ -756,9 +769,13 @@ oxalate
 ubuntu@ip-10-1-1-11:~$
 ```
 
+Try to put the command into a short script (one-liner) :
+
 ```
 TestVariable=`curl --retry 333 -s http://random-word-api.herokuapp.com/word?number=1 | grep -oP '(?<=\[\").*?(?=\"\])'` ; echo "TestVariable's value is : $TestVariable"
 ```
+
+Test the one-liner script :
 
 ```
 ubuntu@ip-10-1-1-11:~$ TestVariable=`curl --retry 333 -s http://random-word-api.herokuapp.com/word?number=1 | grep -oP '(?<=\[\").*?(?=\"\])'` ; echo "TestVariable's value is : $TestVariable"
@@ -772,19 +789,16 @@ ubuntu@ip-10-1-1-11:~$
 
 
 
+***
 
-
-
-
-
-
-
-
-
-
-
-
-
-
+<br><br><br>
+```
+╔═╦═════════════════╦═╗
+╠═╬═════════════════╬═╣
+║ ║ End of Document ║ ║
+╠═╬═════════════════╬═╣
+╚═╩═════════════════╩═╝
+```
+<br><br><br>
 
 
