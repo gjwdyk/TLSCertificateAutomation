@@ -132,14 +132,14 @@ Note that `*.domain.xyz` means for example:
 the wild card (\*) covers only one layer under the `domain.xyz`, not more than that.
 
 ```
-sudo certbot certonly --manual --agree-tos --email 'john.hc.doe@web.de' -d *.aadc.link
+sudo certbot certonly --manual --preferred-challenges=dns --agree-tos --email 'john.hc.doe@web.de' -d *.aadc.link
 ```
 
 Note that you are required to provide keyboard pressure at location marked with `<<<<<<<<< There is a required key-press >>>>>>>>>` in the CLI text dump below.
 The required keyboard pressure means you need to find another way to automate (incorporate the command into a script).
 
 ```
-ubuntu@ip-10-1-1-11:~$ sudo certbot certonly --manual --agree-tos --email 'john.hc.doe@web.de' -d *.aadc.link
+ubuntu@ip-10-1-1-11:~$ sudo certbot certonly --manual --preferred-challenges=dns --agree-tos --email 'john.hc.doe@web.de' -d *.aadc.link
 Saving debug log to /var/log/letsencrypt/letsencrypt.log
 
 - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
