@@ -65,7 +65,7 @@ No certificates found.
 Getting CertBot's help/information:
 
 ```
-ubuntu@ip-10-1-1-11:~$ sudo certbot --help
+ubuntu@Server:~$ sudo certbot --help
 
 - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
@@ -96,11 +96,13 @@ manage certificates:
     certificates    Display information about certificates you have from Certbot
     revoke          Revoke a certificate (supply --cert-name or --cert-path)
     delete          Delete a certificate (supply --cert-name)
+    reconfigure     Update a certificate's configuration (supply --cert-name)
 
 manage your account:
     register        Create an ACME account
     unregister      Deactivate an ACME account
     update_account  Update an ACME account
+    show_account    Display account details
   --agree-tos       Agree to the ACME server's Subscriber Agreement
    -m EMAIL         Email address for important account notifications
 
@@ -115,6 +117,80 @@ More detailed help:
   -h all                print a detailed help page including all topics
   --version             print the version number
 - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+ubuntu@Server:~$
+```
+
+
+
+```
+ubuntu@Server:~$ sudo certbot --help certonly
+usage:
+
+  certbot certonly [options] [-d DOMAIN] [-d DOMAIN] ...
+
+This command obtains a TLS/SSL certificate without installing it anywhere.
+
+optional arguments:
+  -h, --help            show this help message and exit
+  -c CONFIG_FILE, --config CONFIG_FILE
+                        path to config file (default: /etc/letsencrypt/cli.ini and ~/.config/letsencrypt/cli.ini)
+
+certonly:
+  Options for modifying how a certificate is obtained
+
+  -n, --non-interactive, --noninteractive
+                        Run without ever asking for user input. This may require additional command line flags; the client will try to explain which ones are required if it finds one missing (default: False)
+  --force-interactive   Force Certbot to be interactive even if it detects it's not being run in a terminal. This flag cannot be used with the renew subcommand. (default: False)
+  -d DOMAIN, --domains DOMAIN, --domain DOMAIN
+                        Domain names to include. For multiple domains you can use multiple -d flags or enter a comma separated list of domains as a parameter. All domains will be included as Subject Alternative Names on the certificate. The first domain will be used
+                        as the certificate name, unless otherwise specified or if you already have a certificate with the same name. In the case of a name conflict, a number like -0001 will be appended to the certificate name. (default: Ask)
+  --eab-kid EAB_KID     Key Identifier for External Account Binding (default: None)
+  --eab-hmac-key EAB_HMAC_KEY
+                        HMAC key for External Account Binding (default: None)
+  --cert-name CERTNAME  Certificate name to apply. This name is used by Certbot for housekeeping and in file paths; it doesn't affect the content of the certificate itself. Certificate name cannot contain filepath separators (i.e. '/' or '\', depending on the
+                        platform). To see certificate names, run 'certbot certificates'. When creating a new certificate, specifies the new certificate's name. (default: the first provided domain or the name of an existing certificate on your system for the same
+                        domains)
+  --dry-run             Perform a test run against the Let's Encrypt staging server, obtaining test (invalid) certificates but not saving them to disk. This can only be used with the 'certonly' and 'renew' subcommands. It may trigger webserver reloads to temporarily
+                        modify & roll back configuration files. --pre-hook and --post-hook commands run by default. --deploy-hook commands do not run, unless enabled by --run-deploy-hooks. The test server may be overridden with --server. (default: False)
+  --run-deploy-hooks    When performing a test run using `--dry-run` or `reconfigure`, run any applicable deploy hooks. This includes hooks set on the command line, saved in the certificate's renewal configuration file, or present in the renewal-hooks directory. To
+                        exclude directory hooks, use --no-directory-hooks. The hook(s) will only be run if the dry run succeeds, and will use the current active certificate, not the temporary test certificate acquired during the dry run. This flag is recommended
+                        when modifying the deploy hook using `reconfigure`. (default: False)
+  --keep-until-expiring, --keep, --reinstall
+                        If the requested certificate matches an existing certificate, always keep the existing one until it is due for renewal (for the 'run' subcommand this means reinstall the existing certificate). (default: Ask)
+  --allow-subset-of-names
+                        When performing domain validation, do not consider it a failure if authorizations can not be obtained for a strict subset of the requested domains. This may be useful for allowing renewals for multiple domains to succeed even if some domains
+                        no longer point at this system. This option cannot be used with --csr. (default: False)
+  -q, --quiet           Silence all output except errors. Useful for automation via cron. Implies --non-interactive. (default: False)
+  --debug-challenges    After setting up challenges, wait for user input before submitting to CA. When used in combination with the `-v` option, the challenge URLs or FQDNs and their expected return values are shown. (default: False)
+  --preferred-chain PREFERRED_CHAIN
+                        Set the preferred certificate chain. If the CA offers multiple certificate chains, prefer the chain whose topmost certificate was issued from this Subject Common Name. If no match, the default offered chain will be used. (default: None)
+  --preferred-challenges PREF_CHALLS
+                        A sorted, comma delimited list of the preferred challenge to use during authorization with the most preferred challenge listed first (Eg, "dns" or "http,dns"). Not all plugins support all challenges. See
+                        https://certbot.eff.org/docs/using.html#plugins for details. ACME Challenges are versioned, but if you pick "http" rather than "http-01", Certbot will select the latest version automatically. (default: [])
+  --issuance-timeout ISSUANCE_TIMEOUT
+                        This option specifies how long (in seconds) Certbot will wait for the server to issue a certificate. (default: 90)
+  --csr CSR             Path to a Certificate Signing Request (CSR) in DER or PEM format. Currently --csr only works with the 'certonly' subcommand. (default: None)
+  --cert-path CERT_PATH
+                        Path to where certificate is saved (with certonly --csr), installed from, or revoked (default: ./cert.pem)
+  --apache              Obtain and install certificates using Apache (default: False)
+  --nginx               Obtain and install certificates using Nginx (default: False)
+  --standalone          Obtain certificates using a "standalone" webserver. (default: False)
+  --manual              Provide laborious manual instructions for obtaining a certificate (default: False)
+  --webroot             Obtain certificates by placing files in a webroot directory. (default: False)
+  --dns-cloudflare      Obtain certificates using a DNS TXT record (if you are using Cloudflare for DNS). (default: False)
+  --dns-digitalocean    Obtain certificates using a DNS TXT record (if you are using DigitalOcean for DNS). (default: False)
+  --dns-dnsimple        Obtain certificates using a DNS TXT record (if you are using DNSimple for DNS). (default: False)
+  --dns-dnsmadeeasy     Obtain certificates using a DNS TXT record (if you are using DNS Made Easy for DNS). (default: False)
+  --dns-gehirn          Obtain certificates using a DNS TXT record (if you are using Gehirn Infrastructure Service for DNS). (default: False)
+  --dns-google          Obtain certificates using a DNS TXT record (if you are using Google Cloud DNS). (default: False)
+  --dns-linode          Obtain certificates using a DNS TXT record (if you are using Linode for DNS). (default: False)
+  --dns-luadns          Obtain certificates using a DNS TXT record (if you are using LuaDNS for DNS). (default: False)
+  --dns-nsone           Obtain certificates using a DNS TXT record (if you are using NS1 for DNS). (default: False)
+  --dns-ovh             Obtain certificates using a DNS TXT record (if you are using OVH for DNS). (default: False)
+  --dns-rfc2136         Obtain certificates using a DNS TXT record (if you are using BIND for DNS). (default: False)
+  --dns-route53         Obtain certificates using a DNS TXT record (if you are using Route53 for DNS). (default: False)
+  --dns-sakuracloud     Obtain certificates using a DNS TXT record (if you are using Sakura Cloud for DNS). (default: False)
+ubuntu@Server:~$
 ```
 
 
@@ -134,6 +210,15 @@ the wild card (\*) covers only one layer under the `domain.xyz`, not more than t
 ```
 sudo certbot certonly --manual --preferred-challenges=dns --agree-tos --email 'john.hc.doe@web.de' -d *.aadc.link
 ```
+
+Certbot 2.x defaults to ECDSA keys, which are much smaller. Use the `--key-type rsa` and `--rsa-key-size` flags to request an RSA key.
+Reference: [CertBot UserGuide RSA-and-ECDSA-Keys](https://eff-certbot.readthedocs.io/en/stable/using.html#rsa-and-ecdsa-keys) .
+
+```
+sudo certbot certonly --key-type rsa --rsa-key-size 3072 --manual --preferred-challenges=dns --agree-tos --email 'john.hc.doe@web.de' -d *.aadc.link
+```
+
+
 
 Note that you are required to provide keyboard pressure at location marked with `<<<<<<<<< There is a required key-press >>>>>>>>>` in the CLI text dump below.
 The required keyboard pressure means you need to find another way to automate (incorporate the command into a script).
